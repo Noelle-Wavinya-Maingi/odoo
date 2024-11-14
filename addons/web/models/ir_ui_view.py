@@ -28,4 +28,5 @@ class View(models.Model):
             'kanban': {'icon': 'oi oi-view-kanban'},
             'calendar': {'icon': 'fa fa-calendar'},
             'search': {'icon': 'oi oi-search'},
+            'gallery': {'icon': 'fa fa-picture-o'},
         }
