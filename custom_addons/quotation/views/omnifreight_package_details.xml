@@ -1,0 +1,33 @@
+<odoo>
+    <!-- List View -->
+    <record id="view_package_details_list" model="ir.ui.view">
+        <field name="name">package.details.list</field>
+        <field name="model">omnifreight.package.details</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="container_type"/>
+                <field name="contents"/>
+                <field name="content_classification"/>
+                <field name="soc"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_package_details_form" model="ir.ui.view">
+        <field name="name">package.details.form</field>
+        <field name="model">omnifreight.package.details</field>
+        <field name="arch" type="xml">
+            <form string="Package Details">
+                <sheet>
+                    <group>
+                        <field name="container_type"/>
+                        <field name="contents" widget="many2many_tags"/>
+                        <field name="content_classification"/>
+                        <field name="soc"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

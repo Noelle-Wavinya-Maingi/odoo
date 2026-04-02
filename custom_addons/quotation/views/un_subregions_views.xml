@@ -1,0 +1,144 @@
+<odoo>
+    <!-- UN Subregions Views -->
+    <record id="view_un_subregion_list" model="ir.ui.view">
+        <field name="name">un.subregion.list</field>
+        <field name="model">un.subregion</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="continent_id"/>
+                <field name="country_ids" widget="many2many_tags"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_un_subregion_form" model="ir.ui.view">
+        <field name="name">un.subregion.form</field>
+        <field name="model">un.subregion</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="continent_id"/>
+                    </group>
+                    <notebook>
+                        <page string="Countries">
+                            <field name="country_ids"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Continents Views -->
+    <record id="view_continent_list" model="ir.ui.view">
+        <field name="name">geographical.continent.list</field>
+        <field name="model">geographical.continent</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="subregion_names" string="Subregions"/>
+                <field name="country_names" string="Countries"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_continent_form" model="ir.ui.view">
+        <field name="name">geographical.continent.form</field>
+        <field name="model">geographical.continent</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                    </group>
+                    <notebook>
+                        <page string="Subregions">
+                            <field name="subregion_ids"/>
+                        </page>
+                        <page string="Countries">
+                            <field name="country_ids"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- UN Country Views -->
+    <record id="view_unloc_country_list" model="ir.ui.view">
+        <field name="name">unloc.country.list</field>
+        <field name="model">unloc.country</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="alphaCode"/>
+                <field name="subregion_id"/>
+                <field name="continent_id"/>
+                <field name="city_id" widget="many2many_tags" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_unloc_country_form" model="ir.ui.view">
+        <field name="name">unloc.country.form</field>
+        <field name="model">unloc.country</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="alphaCode"/>
+                        </group>
+                        <group>
+                            <field name="subregion_id"/>
+                            <field name="continent_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Cities">
+                            <field name="city_id" />
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- UN City Views -->
+    <record id="view_unloc_city_list" model="ir.ui.view">
+        <field name="name">unloc.city.list</field>
+        <field name="model">unloc.city</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="country_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_unloc_city_form" model="ir.ui.view">
+        <field name="name">unloc.city.form</field>
+        <field name="model">unloc.city</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="country_id"/>
+                        <field name="zip_codes" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

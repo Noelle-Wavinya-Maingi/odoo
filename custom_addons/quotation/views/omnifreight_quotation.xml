@@ -1,0 +1,113 @@
+<odoo>
+    <record id="view_order_form_inherit_quotation_details" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.quotation.details</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Insert custom section below the order details -->
+            <xpath expr="//group[@name='order_details']" position="inside">
+                <field name="currency_id" />
+                <!-- Commented Out Until Historical Data Funtionality is On -->
+                <!-- <field name="client_class"/>
+                <field name="client_volume"/> -->
+            </xpath>
+            <xpath expr="//group[@name='partner_details']" position="inside">   
+                <field name="quote_type" placeholder="Service Scope"/>
+                <field name="quote_line_mode" />
+            </xpath>
+            <xpath expr="//group[@name='order_details']" position="after">
+                <group string="Package Details" colspan="2">
+                    <group colspan="2">
+                        <group>
+                            <field name="container_type" placeholder="Container Size" required="1" />
+                            <field name="soc" />
+                        </group>
+                        <group style="padding-left: 50px">
+                            <field name="contents" widget="many2many_tags" options="{'color_field': 'color'}" string="Cargo Type" required="1" placeholder="Cargo Type"/>
+                            <field name="content_classification" string="Special Category" placeholder="Special Category" />
+                        </group>
+                    </group>
+                    <group style="margin-top: 2rem;"> 
+                        <field name="incoterm_id" placeholder="Incoterm From" required="1" />
+                        <field name="incoterm_to_id" placeholder="Incoterm To" required="1" />
+                    </group>
+                </group>
+
+                <group string="Service Details" colspan="4" style="display: flex; flex-direction: column; gap: 10px;">
+                    <div class="o_form_label">
+                        <span>
+                            Please select and fill in the details for the service(s) required for your quote below:
+                        </span>
+                    </div>
+                    <group style="display: flex; flex-direction: row; gap: 24px; width: 100%;" colspan="4">
+                        <!-- FOB on the left -->
+                        <group style="flex: 1; min-width: 320px; justify-content: flex-start;" string="FOB Details" colspan="2">
+                            <group style="width: 100%;" colspan="2">
+                                <field name="is_fob" readonly="not quote_type"/>
+                            </group>
+                            <group invisible="is_fob != 1" string="Pickup Address"  style="width: 100%;" colspan="2">
+                                <div>
+                                    <group>
+                                        <field name="service_country_id" placeholder="Country" string="Country" options='{"no_open": True, "no_create": True}'/>
+                                        <field name="city_id" placeholder="City" string="City" />
+                                        <field name="zip_code_id" placeholder="ZIP" string="Zip Code" context="{'default_city_id': city_id}"/>
+                                    </group>
+                                </div>
+                                <field name="pickup_region" placeholder="Region"/>
+                                <field name="pickup_type" placeholder="Pickup Type" />
+                                <field name="port_of_loading" string="POL" options='{"no_create": True}' placeholder="Port of Loading"/>
+                                <field name="distance" placeholder="Distance"/>
+                            </group>
+                        </group>
+                        <!-- Freight and Local at Destination on the right, stacked vertically -->
+                        <group style="flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 16px; padding-left: 60px;" colspan="2">
+                            <!-- Freight -->
+                            <group string="Freight Details" colspan="2" style=" display:flex; flex-direction: column; justify-content: flex-start;">
+                                <group style="width: 100%;" colspan="2">
+                                    <field name="is_freight" readonly="not quote_type" />
+                                </group>
+                                <group invisible="is_freight != 1" style="width: 100%;" colspan="2">
+                                    <group colspan="2">
+                                        <field name="port_of_loading" placeholder="Port of Loading"/>
+                                        <field name="port_of_dispatch" placeholder="Port of Destination"/>
+                                        <!-- <field name="transit_time" /> -->
+                                    </group>
+                                </group>
+                            </group>
+                            <!-- Local at Destination -->
+                            <group string="DAP DETAILS" colspan="2">
+                                <group style="width: 100%;" colspan="2">
+                                    <field name="is_lod" readonly="not quote_type"/>
+                                </group>
+                                <group invisible="is_lod != 1" string="Delivery Address" style="width: 100%;" colspan="2">
+                                    <div>
+                                        <group>
+                                            <field name="lod_service_country_id" placeholder="Country" string="Country" options='{"no_open": True, "no_create": True}'/>
+                                            <field name="lod_service_city" placeholder="City" string="City" />
+                                            <field name="lod_service_zip_code_id" placeholder="ZIP" string="Zip Code" context="{'default_city_id': lod_service_city}" />
+                                        </group>
+                                    </div>
+                                    <field name="delivery_region" placeholder="Region"/>
+                                    <field name="port_of_dispatch" string="POD" options='{"no_create": True}' placeholder="Port of Dispatch"/>
+                                    <field name="lod_distance" string="Distance" placeholder="Distance"/>
+                                </group>
+                            </group>
+                        </group>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="sale_order_tree_inherit_add_fields" model="ir.ui.view">
+        <field name="name">sale.order.tree.inherit.add.fields</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.sale_order_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_id']" position="before">
+                <field name="city_id" string="Pickup City" />
+                <field name="lod_service_city" string="Delivery City" />
+            </xpath>
+        </field>
+    </record>
+</odoo>

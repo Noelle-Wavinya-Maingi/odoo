@@ -1,0 +1,126 @@
+.no-delete-transport-rates td.o_list_record_remove {
+  display: none !important;
+}
+
+.o_form_view .o_field_widget[name='contact_ids'] .o-kanban-button-new {
+  display: none !important;
+}
+
+/* Carrier/Supplier fields - consistent width across all sections */
+.custom-card-content .o_list_view th[data-name="carrier_id"],
+.custom-card-content .o_list_view td[data-name="carrier_id"],
+.custom-card-content .o_list_view th[data-name="supplier_id"],
+.custom-card-content .o_list_view td[data-name="supplier_id"] {
+    width: 35% !important;
+    min-width: 35% !important;
+}
+
+/* Notes fields - smaller width across all sections */
+.custom-card-content .o_list_view th[data-name="notes"],
+.custom-card-content .o_list_view td[data-name="notes"],
+.custom-card-content .o_list_view th[data-name="additional_notes"],
+.custom-card-content .o_list_view td[data-name="additional_notes"] {
+    width: 25% !important;
+    min-width: 25% !important;
+}
+
+/* Name fields - smaller width */
+.custom-card-content .o_list_view th[data-name="name"],
+.custom-card-content .o_list_view td[data-name="name"] {
+    width: 30% !important;
+    max-width: 30% !important;
+}
+
+/* Total fields - consistent width for FOB total */
+.custom-card-content .o_list_view th[data-name="fob_total"],
+.custom-card-content .o_list_view td[data-name="fob_total"] {
+    width: 20% !important;
+    min-width: 20% !important;
+    text-align: right !important;
+}
+
+.custom-carrier-rates-table{
+  width: 100% !important;
+}
+
+.custom-card {
+  border: 0.5px solid #c3c3c3;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.custom-card-content {
+  margin-top: 30px;
+  margin-right: 25px;
+  margin-left: 25px;
+  max-width: 95%;
+}
+/* Rate type fields - consistent width */
+.custom-card-content .o_list_view th[data-name="rate_type"],
+.custom-card-content .o_list_view td[data-name="rate_type"] {
+    width: 20% !important;
+    max-width: 20% !important;
+}
+
+.o_form_view select:invalid,
+.o_form_view select option[value=""] {
+    color: #b0b0b0 !important; /* light grey */
+}
+
+.a-field-div .o_form_view .o_group .o_field_widget,
+.a-field-div .o_form_view .o_inner_group .o_field_widget {
+  width: 30.5%;
+}
+
+
+/* This targets the input field within the monetary widget */
+.o_field_monetary .oe_currency_value,
+.oe_currency_right input,
+.oe_currency_right .o_field_float {
+    text-align: right;
+    /* This ensures the text aligns to the right */
+    flex-grow: 1;
+    /* Allows the input to take available space */
+}
+
+/* For monetary fields, especially in read-only mode,
+   the value might be directly within the .o_field_monetary span */
+.o_field_monetary.oe_currency_right {
+    text-align: right;
+    display: inline-block; /* Or block, depending on desired layout */
+    width: 100%; /* Ensure it takes full available width for alignment */
+}
+
+/* Specific adjustments for read-only monetary values where currency and value are separate spans */
+.o_field_monetary.oe_currency_right .o_currency_symbol,
+.o_field_monetary.oe_currency_right .o_field_monetary_value {
+    display: inline-block;
+    /* Ensures they stay together */
+}
+
+/* Adjustments for the specific layout of your "Total" fields */
+.oe_bold_total {
+    font-weight: bold;
+    text-align: right;
+}
+
+/* For fields within one2many lists, ensure their alignment */
+.o_list_view .oe_currency_right .o_field_widget {
+    text-align: right;
+}
+
+.o_list_view .oe_currency_left .o_field_widget {
+  text-align: left;
+}
+
+.o_form_view .o_group .o_field_widget.oe_currency_right,
+.o_form_view .o_inner_group .o_field_widget.oe_currency_right {
+    width: 100%; /* This is crucial for consistent alignment within the allocated column space */
+    text-align: right;
+}
+
+.o_form_view .o_group .o_field_widget.oe_currency_left,
+.o_form_view .o_inner_group .o_field_widget.oe_currency_left {
+    width: 100%; /* This is crucial for consistent alignment within the allocated column space */
+    text-align: left;
+}

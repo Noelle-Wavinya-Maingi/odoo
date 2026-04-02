@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_trading_trade,access_trading_trade,model_trading_trade,base.group_user,1,1,1,1
+access_trading_futures,access_trading_futures,model_trading_futures,base.group_user,1,1,1,1
+access_trading_future_delivery_line,access_trading_future_delivery_line,model_trading_future_delivery_line,base.group_user,1,1,1,1

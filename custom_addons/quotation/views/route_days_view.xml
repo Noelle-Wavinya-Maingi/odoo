@@ -1,0 +1,31 @@
+<odoo>
+
+    <!-- Form View -->
+    <record id="view_route_days_form" model="ir.ui.view">
+        <field name="name">route.days.form</field>
+        <field name="model">route.days</field>
+        <field name="arch" type="xml">
+            <form string="Route Days">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" />
+                            <!-- <field name="day_code" /> -->
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_route_days_list" model="ir.ui.view">
+        <field name="name">route.days.list</field>
+        <field name="model">route.days</field>
+        <field name="arch" type="xml">
+            <list string="Route days">
+                <field name="name" />
+                <!-- <field name="day_code" /> -->
+            </list>
+        </field>
+    </record>
+</odoo>     

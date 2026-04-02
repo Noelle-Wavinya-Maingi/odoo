@@ -1,0 +1,56 @@
+<odoo>
+    <!-- Form View -->
+    <record id="view_transport_rates_form" model="ir.ui.view">
+        <field name="name">omnifreight.transport.rates.form</field>
+        <field name="model">omnifreight.transport.rates</field>
+        <field name="arch" type="xml">
+            <form string="Haulage Rates">
+                <header>
+                    <button name="action_duplicate_rate" type="object" string="Duplicate Rate" 
+                            class="btn-primary" invisible="not show_expiry_warning" 
+                            help="Create a copy of this expired rate with a new validity date"/>
+                </header>
+                <sheet>
+                    <group string="General Information">
+                        <field name="supplier_id" domain="[('company_category', '=', 'supplier')]" options="{'no_create': True}" placeholder="Select Supplier" 
+                               readonly="show_expiry_warning" />
+                        <field name="haulier_region_ids" invisible="1" />
+                        <field name="show_expiry_warning" invisible="1" />
+                        <field name="valid_until" string="Valid Until" placeholder="Select Date" 
+                               decoration-warning="show_expiry_warning" readonly="show_expiry_warning" />
+                        <field name="region_name" readonly="1" />
+                    </group>
+                    
+                    <group string="Pricing Details" style="display: flex; flex-direction: column; gap: 20px;">
+                        <group colspan="2">
+                            <field name="currency_id" widget="many2one" readonly="show_expiry_warning" />
+                            <field name="container_type" placeholder="Select Container Type" readonly="show_expiry_warning" />
+                            <field name="is_distance_based" readonly="show_expiry_warning" />
+                        </group>
+                        <group invisible="not is_distance_based" colspan="3">
+                            <field name="distance_range_ids" nolabel="1" readonly="show_expiry_warning"/>
+                            <field name="price_per_extra_km" widget="monetary" options="{'currency_field': 'currency_id'}" placeholder="Price per Extra KM" 
+                                   readonly="show_expiry_warning" />
+                        </group>
+                        <group invisible="is_distance_based">
+                            <field name="base_price" widget="monetary" options="{'currency_field': 'currency_id'}" placeholder="Base Price" 
+                                   readonly="show_expiry_warning" />
+                            <field name="transport_city" invisible="context.get('active_model') == 'sale.order'" string="City" placeholder="City" 
+                                   readonly="show_expiry_warning" />
+                            <field name="transport_port" invisible="context.get('active_model') == 'sale.order'" string="Port" placeholder="Port" 
+                                   readonly="show_expiry_warning" />
+                        </group>
+                    </group>
+
+                    <group string="Additional Details">
+                        <field name="is_surcharge" invisible="1" />
+                        <field name="pickup_type" placeholder="Pick Up Type" readonly="show_expiry_warning" required="1" />
+                        <field name="soc_tariff" placeholder="SOC Tarrif" readonly="show_expiry_warning" />
+                        <field name="surcharge_fee" placeholder="Hazmat Surcharge" readonly="show_expiry_warning" />
+                        <field name="additional_notes" placeholder="Additional Notes" readonly="show_expiry_warning" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>   

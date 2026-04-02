@@ -1,0 +1,36 @@
+<odoo>
+
+    <!-- Form View -->
+    <record id="view_haulier_region_form" model="ir.ui.view">
+        <field name="name">hauier.region.form</field>
+        <field name="model">haulier.region</field>
+        <field name="arch" type="xml">
+            <form string="Haulier Region">
+                <group>
+                    <group>
+                        <group>
+                            <field name="region_name" />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Haulage Rates" colspan="4">
+                            <field name='transport_ids' context="{'from_haulier_menu': True}">
+                                <list>                                    
+                                    <field name="supplier_id" /> 
+                                    <field name="container_type" />
+                                    <field name="rate_type" />
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="base_price" widget="monetary" options="{'currency_field': 'currency_id'}" />
+                                    <field name="additional_notes" />
+                                    <field name="create_uid" string="Created By" />
+                                    <field name="valid_until" string="Date" />
+                                    <field name="last_updated" string="Last Updated" />
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </group>    
+            </form>
+        </field>
+    </record>
+</odoo>     

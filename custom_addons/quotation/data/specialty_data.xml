@@ -1,0 +1,35 @@
+<odoo>
+    <!-- Specialty Options for Shipping -->
+    <record id="specialty_perishable" model="specialty">
+        <field name="name">Perishable Goods</field>
+        <field name="description">Goods that require refrigeration or special handling to prevent spoilage.</field>
+    </record>
+    <record id="specialty_hazardous" model="specialty">
+        <field name="name">Hazardous Materials</field>
+        <field name="description">Materials that are flammable, toxic, or otherwise dangerous and require special handling.</field>
+    </record>
+    <record id="specialty_oversized" model="specialty">
+        <field name="name">Oversized Cargo</field>
+        <field name="description">Cargo that exceeds standard size limits and requires special equipment for transport.</field>
+    </record>
+    <record id="specialty_fragile" model="specialty">
+        <field name="name">Fragile Items</field>
+        <field name="description">Items that are easily damaged and require careful handling and packaging.</field>
+    </record>
+    <record id="specialty_live_animals" model="specialty">
+        <field name="name">Live Animals</field>
+        <field name="description">Transport of live animals, requiring proper ventilation, temperature control, and care.</field>
+    </record>
+    <record id="specialty_high_value" model="specialty">
+        <field name="name">High-Value Cargo</field>
+        <field name="description">Cargo with high monetary value, requiring enhanced security measures.</field>
+    </record>
+    <record id="specialty_temperature_controlled" model="specialty">
+        <field name="name">Temperature-Controlled Goods</field>
+        <field name="description">Goods that require a specific temperature range during transport.</field>
+    </record>
+    <record id="specialty_express_delivery" model="specialty">
+        <field name="name">Express Delivery</field>
+        <field name="description">Time-sensitive shipments that require expedited delivery.</field>
+    </record>
+</odoo>

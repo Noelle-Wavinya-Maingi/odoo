@@ -1,0 +1,8 @@
+<odoo>
+    <data noupdate="0">
+        <record id="segment_two_trade_with_africa" model="omnifreight.segments">
+            <field name="name">Africa Trade Expertise</field>
+            <field name="code">segment_1</field>
+        </record>
+    </data>
+</odoo>

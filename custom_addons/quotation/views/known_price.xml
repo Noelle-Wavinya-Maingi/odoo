@@ -1,0 +1,36 @@
+<odoo>
+
+    <!-- Form View -->
+    <record id="view_known_price_form" model="ir.ui.view">
+        <field name="name">known.price.form</field>
+        <field name="model">known.price</field>
+        <field name="arch" type="xml">
+            <form string="Known Prices">
+                <header>
+                    <button name="action_duplicate_rate" type="object" string="Duplicate Rate" 
+                            class="btn-primary" invisible="not show_expiry_warning" 
+                            help="Create a copy of this expired rate with a new validity date"/>
+                </header>
+                <sheet>
+                    <group colspan="2">
+                        <field name="carrier_id" placeholder="Carrier" readonly="show_expiry_warning"/>
+                        <field name="transit_time" placeholder="Transit Time" readonly="show_expiry_warning"/>
+                        <field name="show_expiry_warning" invisible="1" />
+                        <field name="valid_until" widget='date' placeholder="Valid Until" 
+                               decoration-danger="show_expiry_warning" readonly="show_expiry_warning"/>
+                        <field name="currency_id" readonly="show_expiry_warning" />
+                    </group>
+                    <group colspan="2">
+                        <field name="container_type" placeholder="Container Type" readonly="show_expiry_warning"/>
+                        <field name="price" widget="monetary" option="{'currency_field': 'currency_id'}" placeholder="Price" readonly="show_expiry_warning"/>
+                        <field name="imo_surcharge_ft"  widget="monetary" option="{'currency_field': 'currency_id'}" placeholder="Hazmat Surcharge" readonly="show_expiry_warning"/>
+                        <field name="soc_tariff" placeholder="SOC Tariff" widget="monetary" option="{'currency_field': 'currency_id'}" readonly="show_expiry_warning"/>
+                    </group>
+                    <group colspan="4">
+                        <field name="notes" placeholder="Notes" readonly="show_expiry_warning"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>     

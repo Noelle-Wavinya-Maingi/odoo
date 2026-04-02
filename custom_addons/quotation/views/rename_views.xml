@@ -1,0 +1,16 @@
+<!-- <odoo>
+  <data>
+    <record id="view_order_form_inherit_operations" model="ir.ui.view">
+      <field name="name">sale.order.form.operations.btn</field>
+      <field name="model">sale.order</field>
+      <field name="inherit_id" ref="sale_mrp.sale_order_form_mrp"/>
+      <field name="arch" type="xml">
+        <! Rename the smart button label -->
+        <!-- <xpath expr="//span[hasclass('o_stat_text')][text()='Manufacturing']" position="replace">
+          <span class="o_stat_text">Operations</span>
+        </xpath>
+      </field>
+    </record>
+  </data>
+</odoo> --> 
+<odoo></odoo>

@@ -1,0 +1,74 @@
+<odoo>
+    <data noupdate="1">
+        <!-- Subcategories for Target 1A -->
+        <record id="cargo_alimentary" model="omnifreight.cargo.type">
+            <field name="name">Alimentary Products</field>
+            <field name="color">1</field>
+        </record>
+        <record id="cargo_animal_food" model="omnifreight.cargo.type">
+            <field name="name">Animal Food</field>
+            <field name="color">2</field>
+        </record>
+        <record id="cargo_automotive" model="omnifreight.cargo.type">
+            <field name="name">Automotive</field>
+            <field name="color">9</field>
+        </record>
+        <record id="cargo_chemical" model="omnifreight.cargo.type">
+            <field name="name">Chemical Products</field>
+            <field name="color">3</field>
+        </record>
+        <record id="cargo_construction" model="omnifreight.cargo.type">
+            <field name="name">Construction Materials</field>
+            <field name="color">10</field>
+        </record>
+        <record id="cargo_consumer" model="omnifreight.cargo.type">
+            <field name="name">Consumer Goods</field>
+            <field name="color">4</field>
+        </record>
+        <record id="cargo_industrial" model="omnifreight.cargo.type">
+            <field name="name">Industrial Goods</field>
+            <field name="color">11</field>
+        </record>
+        <record id="cargo_medical" model="omnifreight.cargo.type">
+            <field name="name">Medical Supplies &amp; Equipment</field>
+            <field name="color">12</field>
+        </record>
+        <record id="cargo_mixed" model="omnifreight.cargo.type">
+            <field name="name">Mixed Used Goods</field>
+            <field name="color">5</field>
+        </record>
+        <record id="cargo_mixed_goods" model="omnifreight.cargo.type">
+            <field name="name">Mixed Goods - Consol Service</field>
+            <field name="color">2</field>
+        </record>
+        <record id="cargo_project" model="omnifreight.cargo.type">
+            <field name="name">Project Cargo</field>
+            <field name="color">3</field>
+        </record>
+        <record id="cargo_raw" model="omnifreight.cargo.type">
+            <field name="name">Raw Materials</field>
+            <field name="color">4</field>
+        </record>
+        <record id="cargo_recyclable" model="omnifreight.cargo.type">
+            <field name="name">Recyclable Materials</field>
+            <field name="color">5</field>
+        </record>
+        <record id="cargo_technical" model="omnifreight.cargo.type">
+            <field name="name">Technical Equipment</field>
+            <field name="color">6</field>
+        </record>
+        <record id="cargo_car" model="omnifreight.cargo.type">
+            <field name="name">Used Cars &amp; Spare Parts </field>
+            <field name="color">6</field>
+        </record>
+        <record id="cargo_clothes" model="omnifreight.cargo.type">
+            <field name="name">Used Clothes</field>
+            <field name="color">7</field>
+        </record>
+        <record id="cargo_tyres" model="omnifreight.cargo.type">
+            <field name="name">Used Tyres</field>
+            <field name="color">8</field>
+        </record>
+        
+    </data>
+</odoo>

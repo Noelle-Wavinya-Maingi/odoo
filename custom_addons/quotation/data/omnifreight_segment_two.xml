@@ -1,0 +1,8 @@
+<odoo>
+    <data noupdate="0">
+        <record id="segment_two_geographical_position" model="omnifreight.segment.two">
+            <field name="name">European Logistics Expertise</field>
+            <field name="code">segment_2</field>
+        </record>
+    </data>
+</odoo>

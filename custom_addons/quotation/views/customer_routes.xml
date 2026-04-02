@@ -1,0 +1,22 @@
+<odoo>
+    <record id="view_partner_form_inherit_customer_routes" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.customer.routes</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='targeting_and_contact']" position="inside">
+                <div class="col-6" name="targeting-section"
+                    invisible="not is_company or (company_type in ['company'] and company_category in ['supplier'])">
+                    <group name="routing_details" string="Shipping Details"
+                        class="mt16">
+                        <field name="incoterm_ids"
+                            string="Incoterms" widget="many2many_tags" />
+                        <field name="route_names" readonly="1" string="Route Names" />
+                        <field name="last_ordered_date"
+                            options="{'no_open': True, 'no_create': True}" />
+                    </group>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

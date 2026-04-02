@@ -1,0 +1,47 @@
+<odoo>
+    <record id="custom_res_partner_kanban_inherit" model="ir.ui.view">
+        <field name="name">res.partner.kanban.inherit.custom</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.res_partner_kanban_view" />
+        <field name="arch" type="xml">
+            <!-- Add required fields for the kanban view -->
+            <xpath expr="//kanban" position="inside">
+                <field name="company_category"/>
+            </xpath>
+            <xpath expr="//div[@t-if='record.city.raw_value or record.country_id.raw_value']"
+                position="attributes">
+                <!-- Change the condition to always false so the node is never rendered -->
+                <attribute name="t-if">False</attribute>
+            </xpath>
+            <xpath expr="//field[@name='email']" position="before">
+                <div>
+                    <field name="unloc_city_id" />
+                    <t t-if="record.unloc_city_id.value and record.country_id.value">
+                        <span>, </span>
+                    </t>
+                    <field name="country_id" />
+                </div>
+            </xpath>
+
+            <xpath expr="//field[@name='email']" position="after">
+                <div class="o_field_html">
+                    <field name="contact_status_badge" widget="html" />
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="res_partner_kanban_view_extension" model="ir.ui.view">
+        <field name="name">res.partner.kanban.rating</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.res_partner_kanban_view" />
+        <field name="arch" type="xml">
+        <!-- Add ratings_tag display after email -->
+        <xpath expr="//field[@name='email']" position="after">
+            <div class="mt-2">
+            <field name="contact_tag_display" widget="html" />
+            </div>
+        </xpath>
+        </field>
+    </record>
+</odoo>

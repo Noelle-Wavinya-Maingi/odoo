@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+operations.access_workflow_stage,access_workflow_stage,operations.model_workflow_stage,base.group_user,1,0,0,0
+operations.access_industry_type,access_industry_type,operations.model_industry_type,base.group_user,1,0,0,0
+operations.access_res_config_settings_operations,res.config.settings,model_res_config_settings,base.group_system,1,1,1,1

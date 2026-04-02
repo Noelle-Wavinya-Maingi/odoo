@@ -1,0 +1,38 @@
+<odoo>
+    <record id="view_route_price_form" model="ir.ui.view">
+        <field name="name">route.price.form</field>
+        <field name="model">route.price</field>
+        <field name="arch" type="xml">
+            <form string="Route Price">
+                <sheet>
+                    <group>
+                        <field name="route_id"/>
+                        <!-- <field name="carrier_id"/> -->
+                        <field name="haulier_region_id" />
+                        <field name="port_id" />
+                        <!-- <field name="package_id"/> -->
+                        <field name="document_fees"/>
+                        <field name="margin_fee"/>
+                        <field name="total_rate" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_route_price_list" model="ir.ui.view">
+        <field name="name">route.price.list</field>
+        <field name="model">route.price</field>
+        <field name="arch" type="xml">
+            <list string="Route Prices">
+                <field name="route_id"/>
+                <!-- <field name="carrier_id"/> -->
+                <field name="port_id" />
+                <!-- <field name="package_id"/> -->
+                <field name="document_fees"/>
+                <field name="margin_fee"/>
+                <field name="total_rate" readonly="1"/>
+            </list>
+        </field>
+    </record>
+</odoo>     

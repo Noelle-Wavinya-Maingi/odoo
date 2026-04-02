@@ -1,0 +1,217 @@
+<odoo>
+    <record id="view_trading_trade_tree" model="ir.ui.view">
+        <field name="name">trading.trade.list</field>
+        <field name="model">trading.trade</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name" />
+                <field name="trade_type" />
+                <field name="lot_ids" />
+                <field name="quantity" />
+                <field name="currency_id" optional="hide" />
+                <field name="price" />
+                <field name="status" widget="badge" decoration-danger="status == 'closed'" decoration-success="status == 'confirmed'" decoration-info="status == 'draft'" optional="hide" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_trading_trade_form" model="ir.ui.view">
+    <field name="name">trading.trade.form</field>
+    <field name="model">trading.trade</field>
+    <field name="arch" type="xml">
+        <form>
+            <header>
+                <button name="action_confirm" type="object" string="Confirm" class="btn-primary" invisible="status in ['confirmed', 'closed']" />
+                <field name="status" widget="statusbar" options="{'clickable': True}" statusbar_visible="draft,confirmed,closed" />
+            </header>
+            <sheet>
+                <div class="oe_button_box" name="button_box">
+                    <button name="action_view_purchase"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-shopping-cart"
+                        invisible="not purchase_id">
+
+                        <field name="purchase_count"
+                               widget="statinfo"
+                               string="Purchase"/>
+                    </button>
+                    <button name="action_view_sales"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-dollar"
+                        invisible="not sale_order_ids">
+
+                        <field name="sale_count"
+                               widget="statinfo"
+                               string="Sales"/>
+                    </button>
+
+                </div>
+                <h1>
+                    <field name="name" nolabel="1" default_focus="1" />
+                </h1>
+                <group col="2">
+                    <group>
+                        <!-- <field name="name" /> -->
+                        <field name="trade_type" readonly="status in ['confirmed', 'closed']" />
+                        <field name="lot_ids" readonly="status in ['confirmed', 'closed']" widget="many2many_tags" />
+                        <field name="sale_order_ids" widget="many2many_tags" options="{'no_create': True}" readonly="1" invisible="1" />
+                    </group>
+                    <group>
+                        <field name="product_id" />
+                        <label for="quantity" string="Quantity" />
+                        <div class="o_row g-0 d-flex"> 
+                        <field name="quantity" readonly="status != 'draft'" />
+                        <field name="product_uom" />
+                        </div>
+                        <label for="on_hand_quantity" string="On Hand Quantity"/>
+                        <div class="o_row g-0 d-flex">
+                        <field name="on_hand_quantity" />
+                        <field name="product_uom" />
+                        </div>
+                        <field name="currency_id" invisible="status != 'draft'" />
+                        <field name="price" readonly="status != 'draft'" />
+                        <field name="sales_price" readonly="status != 'draft'" />
+                    </group>
+                </group>
+
+                
+                <!-- Summary Cards -->
+                <div class="row mt-4">
+                    <!-- Open Positions Card -->
+                    <div class="col-12 col-lg-4">
+                        <div class="card" style="border-left: 4px solid #0d6efd;">
+                            <div class="card-header" style="background-color: #e7f1ff;">
+                                <h5><i class="fa fa-chart-line"/> Open Positions</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mt-2">
+                                    <div class="col-6 text-center">
+                                        <strong style="display: block; font-size: 11px; color: #6c757d;">Total Quantity</strong>
+                                        <!-- <field name="open_positions_qty" readonly="1" nolabel="1"/> -->
+                                    </div>
+                                    <div class="col-6 text-center">
+                                        <strong style="display: block; font-size: 11px; color: #6c757d;">Total Value</strong>
+                                        <!-- <field name="open_positions_value" widget="monetary" readonly="1" nolabel="1"/> -->
+                                    </div>
+                                    <div class="col-6 text-center">
+                                        <strong style="display: block; font-size: 11px; color: #6c757d;">Unrealized P&amp;L</strong>
+                                        <!-- <field name="open_positions_unrealized_pnl" widget="monetary" readonly="1" nolabel="1"/> -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Closed Positions Card -->
+                    <div class="col-12 col-lg-4">
+                        <div class="card" style="border-left: 4px solid #198754;">
+                            <div class="card-header" style="background-color: #d1e7dd;">
+                                <h5><i class="fa fa-check-circle"/> Closed Positions</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mt-2">
+                                    <div class="col-6 text-center">
+                                        <strong style="display: block; font-size: 11px; color: #6c757d;">Contractual P&amp;L</strong>
+                                        <!-- <field name="closed_positions_pnl" widget="monetary" readonly="1" nolabel="1"
+                                               decoration-success="closed_positions_pnl &gt; 0"
+                                               decoration-danger="closed_positions_pnl &lt; 0"/> -->
+
+                                    </div>
+                                    <div class="col-6 text-center">
+                                        <strong style="display: block; font-size: 11px; color: #6c757d;">Total Value</strong>
+                                        <!-- <field name="closed_positions_value" widget="monetary" readonly="1" nolabel="1"  /> -->
+                                        <!-- <strong style="display: block; font-size: 11px; color: #6c757d;">Win Rate</strong> -->
+                                        <!-- <field name="win_rate" readonly="1" nolabel="1"/> -->
+                                    </div>
+                                    <div class="col-6 text-center">
+                                        <strong style="display: block; font-size: 11px; color: #6c757d;">Actual P&amp;L</strong>
+                                        <!-- <field name="closed_positions_actual_pnl" widget="monetary" readonly="1" nolabel="1"/> -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Summary Card -->
+                    <div class="col-12 col-lg-4">
+                        <div class="card" style="border-left: 4px solid #ffc107;">
+                            <div class="card-header" style="background-color: #fff3cd;">
+                                <h5><i class="fa fa-calculator"/> Summary</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-2">
+                                    <div class="col-6 text-center">
+                                        <strong style="display: block; font-size: 11px; color: #6c757d;">Total Trades</strong>
+                                        <!-- <field name="total_trades_count" readonly="1" nolabel="1"/> -->
+                                    </div>
+                                    <div class="col-6 text-center">
+                                        <strong style="display: block; font-size: 11px; color: #6c757d;">Net P&amp;L</strong>
+                                        <!-- <field name="net_pnl" widget="monetary" readonly="1" nolabel="1"
+                                               decoration-success="net_pnl &gt; 0"
+                                               decoration-danger="net_pnl &lt; 0"/> -->
+                                    </div>
+                                    <div class="col-6 text-center">
+                                        <strong style="display: block; font-size: 11px; color: #6c757d;">Actual Net P&amp;L</strong>
+                                        <!-- <field name="net_actual_pnl" widget="monetary" readonly="1" nolabel="1"
+                                            decoration-success="net_actual_pnl &gt; 0"
+                                            decoration-danger="net_actual_pnl &lt; 0"/> -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <notebook>
+                    <page string="Future Positions">
+                       
+                        <!-- <field name="futures_ids" nolabel="1">
+                            <list>
+                                <field name="contract_type"/>
+                                <field name="contract_price" string="Price"/>
+                                <field name="contract_quantity" string="Quantity"/>
+                                <field name="open_date"/>
+                                <field name="close_date"/>
+                                <field name="status" widget="badge" decoration-success="status == 'closed'" decoration-warning="status == 'open'"/>
+                            </list>
+                        </field> -->
+                    </page>
+                    
+                   
+                    <!-- <page string="Notes">
+                       
+                    </page> -->
+                </notebook>
+            </sheet>
+            <chatter />
+        </form>
+    </field>
+</record>
+
+<!-- Pivot View -->
+<record id="view_trading_trade_pivot" model="ir.ui.view">
+    <field name="name">trading.trade.pivot</field>
+    <field name="model">trading.trade</field>
+    <field name="arch" type="xml">
+        <pivot string="Trading Analysis">
+
+            <!-- ROWS (Group By options) -->
+            <field name="product_id" type="row"/>
+            <field name="trade_type" type="row"/>
+            <field name="status" type="row"/>
+            <field name="purchase_id" type="row"/>
+
+            <!-- COLUMNS -->
+            <field name="create_date" type="col" interval="month"/>
+
+            <!-- MEASURES -->
+            <field name="quantity" type="measure"/>
+            <field name="price" type="measure"/>
+            <!-- <field name="net_pnl" type="measure"/> -->
+
+        </pivot>
+    </field>
+</record>
+</odoo>

@@ -1,0 +1,11 @@
+<odoo>
+    <record id="model_omnifreight_quotation_omnifreight_quotation" model="ir.model">
+        <field name="name">Omnifreight Quotation</field>
+        <field name="model">omnifreight.quotation</field>
+    </record>
+
+    <record id="model_omnifreight_shipment_omnifreight_shipment" model="ir.model">
+        <field name="name">Omnifreight Shipment</field>
+        <field name="model">omnifreight.shipment</field>
+    </record>
+</odoo>

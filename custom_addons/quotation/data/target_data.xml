@@ -1,0 +1,31 @@
+<odoo>
+    <data noupdate="1">
+        <!-- Targets for Segment 1 -->
+        <record id="target_1a_standalone_merchants_1" model="target">
+            <field name="name">Target 1A: Standalone Merchants Trading In/with Africa</field>
+            <field name="segment">segment_1</field>
+        </record>
+        <record id="target_1b_sme_trading_africa_1" model="target">
+            <field name="name">Target 1B: SME's Trading in/with Africa</field>
+            <field name="segment">segment_1</field>
+        </record>
+        <record id="target_1c_worldwide_freight_1" model="target">
+            <field name="name">Target 1C: Worldwide Freight Forwarders &amp; Traders dealing with Africa</field>
+            <field name="segment">segment_1</field>
+        </record>
+
+        <!-- Targets for Segment 2 -->
+        <record id="target_2a_sme_europe_logistics_1" model="target">
+            <field name="name">Target 2A: SME's needing logistics services in Europe</field>
+            <field name="segment">segment_2</field>
+        </record>
+        <record id="target_2b_chinese_companies_europe_1" model="target">
+            <field name="name">Target 2B: Chinese companies in Europe</field>
+            <field name="segment">segment_2</field>
+        </record>
+        <record id="target_2c_worldwide_europe_freight_1" model="target">
+            <field name="name">Target 2C: Worldwide Freight Forwarders needing logistics solutions in Europe</field>
+            <field name="segment">segment_2</field>
+        </record>
+    </data>
+</odoo>

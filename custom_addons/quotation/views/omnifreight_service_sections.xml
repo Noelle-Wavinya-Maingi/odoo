@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_service_sections_order" model="ir.ui.view">
+        <field name="name">omnifreight.service.sections.order</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='fob']" position="inside">
+                <!-- FOB Section -->
+                <group name="fob_section" class="card custom-card" invisible="not show_fob_section">
+                    <div>
+                        <div class="mb-4 custom-card-content" >
+                            <field name="rate_link_ids"
+                                context="{'active_model': 'sale.order', 'active_id': id, 'active_view': 'fob', 'from_haulier_menu': False}" invisible="pickup_type=='no_pickup'" domain="[('is_hidden', '=', False)]">
+                                <list nolabel="1">
+                                    <field name="supplier_id" string="HAULAGE RATES" />
+                                    <field name="rate_type" />
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="base_price" string="Base Price" widget="monetary" options="{'currency_field': 'currency_id'}" />
+                                    <field name="surcharge_fee" column_invisible="not parent.has_hazardous_content" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="fob_total" string="Total Rate" widget="monetary" options="{'currency_field': 'currency_id'}" column_invisible="not parent.has_hazardous_content"/>
+                                    <field name="additional_notes" />
+                                    <field name="show_expiry_warning" invisible="1" optional="hide"/>
+                                    <field name="rate_valid_until" decoration-warning="show_expiry_warning"/>
+                                    <field name="is_selected_fob" string="" invisible="show_expiry_warning"
+                                        widget="boolean_toggle" />
+                                </list>
+                            </field>
+                        </div>
+                        <div style="margin-left: 40px; margin-right: 50px; margin-top: 30px">
+                            <group name="extra_fob_costs">
+                                <field name="fob_special_costs_id" nolabel="1" 
+                                    context="{'default_is_fob_cost': 'True', 'is_lod_cost': False,'default_port': port_of_dispatch, 'default_container_type': container_type, 'default_pickup_type': pickup_type, 'parent_soc': soc, 'parent_container_type': container_type, 'parent_port_id': port_of_loading, 'parent_is_fob_cost': True, 'parent_is_port_cost': True, 'parent_is_lod_cost': False, 'parent_is_freight_cost': False}">
+                                    <list editable="bottom">
+                                        <field name="additional_cost_id" domain="[('is_fob_cost', '=', True)]" string="EXTRA FOB COSTS" />
+                                        <field name="omnifreight_extra_cost_units" />
+                                        <field name="omnifreight_extra_cost_price_per_unit"/>
+                                        <field name="currency_id" column_invisible="True"/>
+                                        <field name="price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    </list>
+                                </field>
+                            </group>
+                        </div>
+                    </div>
+                </group>
+
+                <!-- Freight Section -->
+                <group name="freight_section" class="card custom-card" invisible="not show_freight_section">
+                    <div>
+                        <div class="mb-4 custom-card-content">
+                            <field name="known_price_lines" nolabel="1">
+                                <list>
+                                    <field name="carrier_id" string="CARRIER FREIGHT RATES" domain="[('company_category', '=', 'supplier')]"/>
+                                    <field name="transit_time" string="TT"/>
+                                    <field name="departure_frequency" string="DF"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="imo_surcharge_ft" column_invisible="not parent.has_hazardous_content"/>
+                                    <field name="soc_tariff" string="SOC Tariff" widget="monetary" options="{'currency_field': 'currency_id'}" column_invisible="not parent.soc"/>
+                                    <field name="rate_total" widget="monetary" options="{'currency_field': 'currency_id'}" string="Total Rate"/>
+                                    <field name="notes" />
+                                    <field name="show_expiry_warning" invisible="1" optional="hide"/>
+                                    <field name="valid_until" decoration-warning="show_expiry_warning"/>
+                                    <field name="is_selected" widget="boolean_toggle" nolabel="1" invisible="show_expiry_warning"/>
+                                </list>
+                            </field>
+                        </div>
+                        <div class="custom-card-content">
+                            <group name="extra_freight_costs">
+                                <field name="special_cost_ids" nolabel="1" context="{'default_is_freight_cost': True, 'default_is_route_cost': True, 'default_is_port_cost': False, 'default_is_soc_cost': False, 'default_is_fob_cost': False, 'default_is_lod_cost': False, 'default_container_type': container_type, 'default_route_id': route_id, 'parent_container_type': container_type, 'parent_route_id': route_id, 'parent_is_freight_cost': True, 'parent_is_route_cost': True, 'parent_is_soc_cost': False, 'parent_is_fob_cost': False, 'parent_is_lod_cost': False}" >
+                                    <list editable="bottom">
+                                        <field name="additional_cost_id" domain="[('is_freight_cost', '=', True)]" string="EXTRA FREIGHT &amp; MISCELLANEOUS COSTS" />
+                                        <field name="omnifreight_extra_cost_units" />
+                                        <field name="omnifreight_extra_cost_price_per_unit"/>
+                                        <field name="currency_id" column_invisible="True"/>
+                                        <field name="price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                </list>
+                            </field>
+                            </group>
+                        </div>
+                    </div>
+                </group>
+
+                <!-- LOD Section -->
+                <group name="lod_section" class="card custom-card" invisible="not show_lod_section">
+                    <div>
+                        <div class="mb-4 custom-card-content">
+                            <field name="lod_rate_link_ids"
+                                context="{'active_model': 'sale.order', 'active_id': id, 'active_view': 'lod', 'from_haulier_menu': False}" domain="[('is_hidden', '=', False)]">
+                                <list>
+                                    <field name="supplier_id" string="DESTINATION RATES" />
+                                    <field name="rate_type" />
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="base_price" string="Base Price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="soc_tariff" string="SOC Tariff" widget="monetary" options="{'currency_field': 'currency_id'}" column_invisible="not parent.soc"/>
+                                    <field name="lod_total" string="Total Rate" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="additional_notes" />
+                                    <field name="show_expiry_warning" invisible="1" optional="hide"/>
+                                    <field name="rate_valid_until" decoration-warning="show_expiry_warning"/>
+                                    <field name="is_selected_lod" string="" invisible="show_expiry_warning"
+                                        widget="boolean_toggle" />
+                                </list>
+                            </field>
+                        </div>
+                        <div class="custom-card-content">
+                            <group name="extra_lod_costs">
+                                <field name="lod_special_costs_id" nolabel="1" context="{'default_is_lod_cost': 'True', 'parent_soc': soc, 'parent_container_type': container_type, 'parent_port_id': port_of_dispatch, 'parent_is_lod_cost': True, 'parent_is_fob_cost': False, 'parent_is_port_cost': True, 'parent_is_freight_cost': False}">
+                                    <list editable="bottom">
+                                        <field name="additional_cost_id" domain="[('is_lod_cost', '=', True)]" string="EXTRA DESTINATION COSTS" />
+                                        <field name="omnifreight_extra_cost_units" />
+                                        <field name="omnifreight_extra_cost_price_per_unit"/>
+                                        <field name="currency_id" column_invisible="True"/>
+                                        <field name="price" widget="monetary" options="{'currency_field': 'currency_id'}"/>  
+                                    </list>
+                                </field>
+                            </group>
+                        </div>
+                    </div>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo> 

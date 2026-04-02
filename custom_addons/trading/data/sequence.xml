@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!-- Long Trades -->
+        <record id="seq_trading_trade_long" model="ir.sequence">
+            <field name="name">Trading Trade Long</field>
+            <field name="code">trading.trade.long</field>
+            <field name="prefix">TRD/LONG/</field>
+            <field name="padding">5</field>
+        </record>
+
+        <!-- Short Trades -->
+        <record id="seq_trading_trade_short" model="ir.sequence">
+            <field name="name">Trading Trade Short</field>
+            <field name="code">trading.trade.short</field>
+            <field name="prefix">TRD/SHORT/</field>
+            <field name="padding">5</field>
+        </record>
+
+    </data>
+</odoo>

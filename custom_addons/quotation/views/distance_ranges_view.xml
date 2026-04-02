@@ -1,0 +1,35 @@
+<odoo>
+  <!-- List View for omnifreight.distance.range -->
+  <record id="view_omnifreight_distance_range_list" model="ir.ui.view">
+      <field name="name">omnifreight.distance.range.list</field>
+      <field name="model">omnifreight.distance.range</field>
+      <field name="arch" type="xml">
+          <list string="Distance Ranges">
+              <!-- <field name="haulier_region_id"/> -->
+              <field name="min_distance"/>
+              <field name="max_distance"/>
+              <field name="price" widget="monetary" options="{'currency_field': 'currency_id'}" />
+              <field name="currency_id" />
+          </list>
+      </field>
+  </record>
+
+  <!-- Form View for omnifreight.distance.range -->
+  <record id="view_omnifreight_distance_range_form" model="ir.ui.view">
+      <field name="name">omnifreight.distance.range.form</field>
+      <field name="model">omnifreight.distance.range</field>
+      <field name="arch" type="xml">
+          <form string="Distance Range">
+              <sheet>
+                  <group>
+                      <!-- <field name="name" /> -->
+                      <field name="min_distance"/>
+                      <field name="max_distance"/>
+                      <field name="price" widget="monetary" options="{'currency_field': 'currency_id'}" />
+                      <field name="currency_id"  />
+                  </group>
+              </sheet>
+          </form>
+      </field>
+  </record>
+</odoo>

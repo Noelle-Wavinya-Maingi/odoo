@@ -1,0 +1,70 @@
+<odoo>
+    <data noupdate="1">
+        <!-- Action for Routes -->
+        <record id="action_omnifreight_route" model="ir.actions.act_window">
+            <field name="name">Shipping Routes</field>
+            <field name="res_model">omnifreight.route</field>
+            <field name="view_mode">list,form</field>
+            <field name="target">current</field>
+        </record>
+
+        <!-- Action for Carriers -->
+        <record id="action_omnifreight_carrier" model="ir.actions.act_window">
+            <field name="name">Carriers</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_mode">list,form</field>
+            <field name="target">current</field>
+            <field name="domain">[('company_category', '=', 'supplier')]</field>
+            <field name="context">{'default_company_type': 'company', 'default_company_category': 'supplier','is_carrier_menu': true}</field>
+        </record>
+
+        <!-- Action for Ports -->
+        <record id="action_ports" model="ir.actions.act_window">
+            <field name="name">Ports</field>
+            <field name="res_model">port</field>
+            <field name="view_mode">list,form</field>
+            <field name="target">current</field>
+        </record>
+
+        <!-- Action for Haulier regions -->
+        <record id="action_haulier_region" model="ir.actions.act_window">
+            <field name="name">Haulier Region</field>
+            <field name="res_model">haulier.region</field>
+            <field name="view_mode">list,form</field>
+            <field name="target">current</field>
+            <field name="context">{'from_haulier_menu': True}</field>
+        </record>
+
+        <!-- Main Omnifreight Quotation menu -->
+        <menuitem id="menu_freight_management"
+                  name="Freight Management"
+                  parent="sale.sale_menu_root"
+                  sequence="10"
+                  groups="base.group_system" />
+
+        <!-- Submenus under Freight Management -->
+        <menuitem id="menu_ports"
+                  name="Ports"
+                  action="action_ports"
+                  parent="menu_freight_management"
+                  sequence="10"/>
+        
+        <menuitem id="menu_omnifreight_route"
+                  name="Routes"
+                  action="action_omnifreight_route"
+                  parent="menu_freight_management"
+                  sequence="20"/>
+        
+        <menuitem id="menu_haulier_region"
+                  name="Haulier Regions"
+                  action="action_haulier_region"
+                  parent="menu_freight_management"
+                  sequence="30"/>
+        
+        <menuitem id="menu_omnifreight_carrier"
+                  name="Carrier Management"
+                  action="action_omnifreight_carrier"
+                  parent="menu_freight_management"
+                  sequence="40"/>          
+    </data>
+</odoo>

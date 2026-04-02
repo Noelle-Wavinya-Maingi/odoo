@@ -1,0 +1,47 @@
+<odoo>
+    <!-- List View -->
+    <record id="view_port_list" model="ir.ui.view">
+        <field name="name">port.list</field>
+        <field name="model">port</field>
+        <field name="arch" type="xml">
+            <list string="Ports">
+                <field name="name" placeholder="Name" />
+                <field name="port_city" string="City" placeholder="City" />
+                <field name="country_id" placeholder="Country" />
+                <field name="terminal" placeholder="Terminal" />
+                <field name="last_updated" string="Latest Update" placeholder="Latest Update" />
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_port_form" model="ir.ui.view">
+        <field name="name">port.form</field>
+        <field name="model">port</field>
+        <field name="arch" type="xml">
+            <form string="Port">
+                <sheet>
+                <div name="button_box" class="oe_button_box" position="inside">
+                    <button name="action_redirect_to_route" type="object" string="Port Routes"
+                        class="oe_stat_button" icon="fa-road" />
+                </div>
+                    <group>
+                        <group>
+                            <field name="name" placeholder="Name" />
+                            <field name="country_id" placeholder="Country" />
+                            <field name="port_code" placeholder="Port Code" />
+                            <field name="expert_id" placeholder="Expert" />
+                            <field name="label_id" widget="many2many_tags" placeholder="Labels" />
+                        </group>
+                        <group>
+                            <field name="port_city" string="City" placeholder="City" domain="[('country_id', '=', country_id)]" />
+                            <field name="terminal" placeholder="Terminal" />
+                            <field name="haulier_region_id" placeholder="Haulier Region" />
+                            <field name="port_info" placeholder="Port Info" />
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>     

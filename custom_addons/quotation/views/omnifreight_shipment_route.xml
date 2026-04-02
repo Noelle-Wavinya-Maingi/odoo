@@ -1,0 +1,131 @@
+<odoo>
+
+    <!-- ========================================================= -->
+    <!--  ROUTE FORM VIEW                                          -->
+    <!-- ========================================================= -->
+    <record id="view_omnifreight_route_form" model="ir.ui.view">
+        <field name="name">omnifreight.route.form</field>
+        <field name="model">omnifreight.route</field>
+        <field name="arch" type="xml">
+            <form string="Route">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="departure_port_id"/>
+                            <field name="arrival_port_id"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Known Prices">
+                            <!-- Studio-friendly One2many -->
+                            <field name="known_prices_id"
+                                   widget="one2many"
+                                   mode="list,form"
+                                   context="{'default_route_id': id}"
+                                   />
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- ========================================================= -->
+    <!--  ROUTE LIST VIEW                                          -->
+    <!-- ========================================================= -->
+    <record id="view_omnifreight_route_list" model="ir.ui.view">
+        <field name="name">omnifreight.route.list</field>
+        <field name="model">omnifreight.route</field>
+        <field name="arch" type="xml">
+            <list string="Routes">
+                <field name="name"/>
+                <field name="departure_port_id" string="Port of Loading"/>
+                <field name="arrival_port_id" string="Port of Destination"/>
+                <field name="last_updated"/>
+            </list>
+        </field>
+    </record>
+
+
+
+    <!-- ========================================================= -->
+    <!--  KNOWN PRICES – TREE VIEW                                -->
+    <!-- ========================================================= -->
+    <record id="view_known_prices_list" model="ir.ui.view">
+        <field name="name">known.prices.list</field>
+        <field name="model">known.price</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="id" string="ID"/>
+                <field name="carrier_id" string="Shipping Line"/>
+                <field name="container_type"/>
+                <field name="currency_id"/>
+                <field name="price"
+                       string="Price"
+                       widget="monetary"
+                       options="{'currency_field': 'currency_id'}"
+                       decoration-success="is_cheapest"
+                />
+                <field name="last_updated" decoration-danger="is_oldest"/>
+                <field name="valid_until"/>
+            </list>
+        </field>
+    </record>
+
+
+
+    <!-- ========================================================= -->
+    <!--  KNOWN PRICES – FORM VIEW                                -->
+    <!-- ========================================================= -->
+    <record id="view_known_prices_form" model="ir.ui.view">
+        <field name="name">known.prices.form</field>
+        <field name="model">known.price</field>
+        <field name="arch" type="xml">
+            <form string="Known Price">
+                <header>
+                    <button name="action_duplicate_rate"
+                            type="object"
+                            string="Duplicate Rate"
+                            class="btn-primary"
+                            invisible="not show_expiry_warning"
+                            help="Create a copy of this expired rate with a new validity date"
+                    />
+                </header>
+
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="carrier_id" readonly="show_expiry_warning"/>
+                            <field name="transit_time" readonly="show_expiry_warning"/>
+                            <field name="valid_until"
+                                   widget="date"
+                                   decoration-danger="show_expiry_warning"
+                                   readonly="show_expiry_warning"
+                            />
+                            <field name="show_expiry_warning" invisible="1"/>
+                            <field name="notes" readonly="show_expiry_warning"/>
+                        </group>
+
+                        <group>
+                            <field name="container_type" readonly="show_expiry_warning"/>
+                            <field name="currency_id" readonly="show_expiry_warning"/>
+                            <field name="price"
+                                   widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"
+                                   readonly="show_expiry_warning"
+                            />
+                            <field name="imo_surcharge_ft"
+                                   widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"
+                                   readonly="show_expiry_warning"
+                            />
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

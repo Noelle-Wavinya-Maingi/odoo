@@ -1,0 +1,32 @@
+<odoo>
+    <!-- Container Types -->
+    <record id="container_type_reefer" model="container.type">
+        <field name="name">Reefer Container</field>
+    </record>
+    <record id="container_type_open_top" model="container.type">
+        <field name="name">Open Top Container</field>
+        <field name="code">OPEN_TOP</field>
+    </record>
+    <record id="container_type_dry" model="container.type">
+        <field name="name">Dry Container</field>
+        <field name="code">DRY</field>
+    </record>
+    <record id="container_type_flatrack" model="container.type">
+        <field name="name">Flatrack Container</field>
+        <field name="code">FLATRACK</field>
+    </record>
+
+    <!-- Container Sizes -->
+    <record id="container_size_20ft" model="container.size">
+        <field name="name">20-foot</field>
+        <field name="code">20FT</field>
+    </record>
+    <record id="container_size_40ft" model="container.size">
+        <field name="name">40-foot</field>
+        <field name="code">40FT</field>
+    </record>
+    <record id="container_size_40hc" model="container.size">
+        <field name="name">40-foot High Cube Container</field>
+        <field name="code">40HC</field>
+    </record>
+</odoo>

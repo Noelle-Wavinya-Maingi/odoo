@@ -1,0 +1,133 @@
+<odoo>
+    <!-- Client Roles -->
+    <record id="role_client_management" model="omnifreight.roles">
+        <field name="name">Management</field>
+        <field name="description">Responsible for managing teams.</field>
+        <field name="role_type">client</field>
+        <field name="color">1</field>
+    </record>
+    <record id="role_client_manager" model="omnifreight.roles">
+        <field name="name">Project Manager</field>
+        <field name="description">Responsible for managing teams or departments.</field>
+        <field name="role_type">client</field>
+        <field name="color">2</field>
+    </record>
+    <record id="role_client_logist" model="omnifreight.roles">
+        <field name="name">Logistics/Operations</field>
+        <field name="description">Responsible for logistics and operations</field>
+        <field name="role_type">client</field>
+        <field name="color">3</field>
+    </record>
+    <record id="role_client_finance" model="omnifreight.roles">
+        <field name="name">Finance</field>
+        <field name="description">Responsible for finance matters.</field>
+        <field name="role_type">client</field>
+        <field name="color">4</field>
+    </record>
+    <record id="role_client_legal" model="omnifreight.roles">
+        <field name="name">Legal</field>
+        <field name="description">Responsible for legal matters.</field>
+        <field name="role_type">client</field>
+        <field name="color">5</field>
+    </record>
+
+    <!-- Supplier of Logistics Services Roles -->
+    <record id="role_supplier_management" model="omnifreight.roles">
+        <field name="name">Management</field>
+        <field name="description">Responsible for overall management.</field>
+        <field name="role_type">logistics_supplier</field>
+        <field name="color">5</field>
+    </record>
+    <record id="role_supplier_sales" model="omnifreight.roles">
+        <field name="name">Sales</field>
+        <field name="description">Responsible for sales activities.</field>
+        <field name="role_type">logistics_supplier</field>
+        <field name="color">6</field>
+    </record>
+    <record id="role_supplier_operations" model="omnifreight.roles">
+        <field name="name">Operations</field>
+        <field name="description">Responsible for operational activities.</field>
+        <field name="role_type">logistics_supplier</field>
+        <field name="color">7</field>
+    </record>
+    <record id="role_supplier_documentation" model="omnifreight.roles">
+        <field name="name">Documentation</field>
+        <field name="description">Responsible for documentation.</field>
+        <field name="role_type">logistics_supplier</field>
+        <field name="color">8</field>
+    </record>
+    <record id="role_finance_supplier" model="omnifreight.roles">
+        <field name="name">Finance</field>
+        <field name="description">Responsible for finance matters.</field>
+        <field name="role_type">logistics_supplier</field>
+        <field name="color">9</field>
+    </record>
+    <record id="role_legal_supplier" model="omnifreight.roles">
+        <field name="name">Legal</field>
+        <field name="description">Responsible for legal matters.</field>
+        <field name="role_type">logistics_supplier</field>
+        <field name="color">10</field>
+    </record>
+
+    <!-- Supplier of General Services Roles -->
+     <record id="role_general_management" model="omnifreight.roles">
+        <field name="name">Management</field>
+        <field name="description">Responsible for overall management.</field>
+        <field name="role_type">general_supplier</field>
+        <field name="color">5</field>
+    </record>
+    <record id="role_general_sales" model="omnifreight.roles">
+        <field name="name">Sales</field>
+        <field name="description">Responsible for sales.</field>
+        <field name="role_type">general_supplier</field>
+        <field name="color">10</field>
+    </record>
+    <record id="role_general_operations" model="omnifreight.roles">
+        <field name="name">Operations</field>
+        <field name="description">Responsible for operations.</field>
+        <field name="role_type">general_supplier</field>
+        <field name="color">11</field>
+    </record>
+    <record id="role_general_finance" model="omnifreight.roles">
+        <field name="name">Finance</field>
+        <field name="description">Responsible for financial matters.</field>
+        <field name="role_type">general_supplier</field>
+        <field name="color">11</field>
+    </record>
+    <record id="role_general_legal" model="omnifreight.roles">
+        <field name="name">Legal</field>
+        <field name="description">Responsible for legal matters.</field>
+        <field name="role_type">general_supplier</field>
+        <field name="color">12</field>
+    </record>
+    <record id="role_organization_management" model="omnifreight.roles">
+        <field name="name">Management</field>
+        <field name="description">Responsible for managing teams.</field>
+        <field name="role_type">organization</field>
+        <field name="color">1</field>
+    </record>
+    <record id="role_organization_manager" model="omnifreight.roles">
+        <field name="name">Project Manager</field>
+        <field name="description">Responsible for managing teams or departments.</field>
+        <field name="role_type">organization</field>
+        <field name="color">2</field>
+    </record>
+    <record id="role_organization_logist" model="omnifreight.roles">
+        <field name="name">Logistics/Operations</field>
+        <field name="description">Responsible for logistics and operations</field>
+        <field name="role_type">organization</field>
+        <field name="color">3</field>
+    </record>
+    <record id="role_organization_finance" model="omnifreight.roles">
+        <field name="name">Finance</field>
+        <field name="description">Responsible for finance matters.</field>
+        <field name="role_type">organization</field>
+        <field name="color">4</field>
+    </record>
+    <record id="role_organization_legal" model="omnifreight.roles">
+        <field name="name">Legal</field>
+        <field name="description">Responsible for legal matters.</field>
+        <field name="role_type">organization</field>
+        <field name="color">5</field>
+    </record>
+</odoo>

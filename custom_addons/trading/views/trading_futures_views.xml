@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_trading_futures_tree" model="ir.ui.view">
+        <field name="name">trading.futures.list</field>
+        <field name="model">trading.futures</field>
+        <field name="arch" type="xml">
+            <list>
+                <!-- <field name="name"/> -->
+                <field name="trade_id"/>
+                
+                <field name="contract_quantity" string="Quantity"/>
+                <field name="product_uom" nolabel="1" />
+                <field name="contract_price"/>
+                <field name="closed_balance"/>
+                <field name="open_balance"/>
+                <field name="closed_sales_value" sum="Total Sales"/>
+                <!-- <field name="net_value" sum="Total Net Value"/> -->
+                <field name="realized_pnl" sum="Total Realized"/>
+                <field name="status" widget="badge" decoration-success="status == 'closed'" decoration-info="status == 'open'" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_trading_futures_form" model="ir.ui.view">
+        <field name="name">trading.futures.form</field>
+        <field name="model">trading.futures</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="status" widget="statusbar" options="{'clickable': False}" />
+                </header>
+                <sheet>
+                    <h1>
+                        <field name="name" nolabel="1"  default_focus="1" />
+                    </h1>
+                    <group string="Contract Details">
+                        <group>
+                            <field name="trade_id" readonly="status == 'closed'"/>
+                            <field name="open_date" readonly="status == 'closed'"/>
+                            <field name="close_date" readonly="status == 'closed'"/>
+                        </group>
+                        <group>
+                            <field name="contract_type" readonly="status == 'closed'"/>
+                            <label for="contract_quantity" string="Contract Quantity" />
+                            <div class="o_row g-0 d-flex">
+                            <field name="contract_quantity" readonly="status == 'closed'"/>
+                            <field name="product_uom" />
+                            </div>
+                            <field name="currency_id"  invisible="1" />
+                            <field name="contract_price" widget="monetary" readonly="status == 'closed'" />
+                            <field name="current_price" invisible="status == 'closed'"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Balances">
+                        <group>
+                            <label for="closed_balance" string="Closed Balance" />
+                            <div class="o_row g-0 d-flex">
+                            <field name="closed_balance"/>
+                            <field name="product_uom" />
+                            </div>
+                            <label for="open_balance" string="Open Balance" />
+                            <div class="o_row g-0 d-flex">
+                            <field name="open_balance"/>
+                            <field name="product_uom" />
+                            </div>
+                        </group>
+                        <group>
+                            <field name="closed_value_at_contract" widget="monetary"/>
+                            <field name="open_value_at_contract" widget="monetary"/>
+                            <field name="total_contract_value" widget="monetary"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Valuation">
+                        <group>
+                            <field name="closed_sales_value" widget="monetary"/>
+                            <field name="net_value" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="realized_pnl" widget="monetary"/>
+                            <field name="unrealized_pnl" widget="monetary" />
+                            <!-- <field name="unrealized_pnl"/>
+                            <field name="total_pnl"/> -->
+                        </group>
+                    </group>
+                </sheet>
+                <chatter />
+            </form>
+        </field>
+    </record>
+</odoo>

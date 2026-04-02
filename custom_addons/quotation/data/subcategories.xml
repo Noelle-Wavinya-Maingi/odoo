@@ -1,0 +1,180 @@
+<odoo>
+    <data noupdate="1">
+        <!-- Subcategories for Target 1A -->
+        <record id="subcategory_1a_alimentary_products" model="subcategory">
+            <field name="name">Alimentary Products</field>
+            <field name="target">target_1a</field>
+            <field name="color">1</field>
+        </record>
+        <record id="subcategory_1a_mixed_used" model="subcategory">
+            <field name="name">Mixed Used Goods</field>
+            <field name="target">target_1a</field>
+            <field name="color">5</field>
+        </record>
+        <record id="subcategory_1a_car_used" model="subcategory">
+            <field name="name">Used Cars &amp; Spare Parts </field>
+            <field name="target">target_1a</field>
+            <field name="color">6</field>
+        </record>
+        <record id="subcategory_1a_clothes_used" model="subcategory">
+            <field name="name">Used Clothes</field>
+            <field name="target">target_1a</field>
+            <field name="color">7</field>
+        </record>
+        <record id="subcategory_1a_tyres_used" model="subcategory">
+            <field name="name">Used Tyres</field>
+            <field name="target">target_1a</field>
+            <field name="color">8</field>
+        </record>
+ 
+        <!-- Subcategories for Target 1B -->
+        <record id="subcategory_1b_alimentary_products" model="subcategory">
+            <field name="name">Alimentary Products</field>
+            <field name="target">target_1b</field>
+            <field name="color">1</field>
+        </record>
+        <record id="subcategory_1b_animal" model="subcategory">
+            <field name="name">Animal Food</field>
+            <field name="target">target_1b</field>
+            <field name="color">2</field>
+        </record>
+        <record id="subcategory_1b_auto_motive" model="subcategory">
+            <field name="name">Automotive</field>
+            <field name="target">target_1b</field>
+            <field name="color">9</field>
+        </record>
+        <record id="subcategory_1b_chemical_products" model="subcategory">
+            <field name="name">Chemical Products</field>
+            <field name="target">target_1b</field>
+            <field name="color">3</field>
+        </record>
+        <record id="subcategory_1b_construction_materials" model="subcategory">
+            <field name="name">Construction Materials</field>
+            <field name="target">target_1b</field>
+            <field name="color">10</field>
+        </record>
+        <record id="subcategory_1b_consumer_goods" model="subcategory">
+            <field name="name">Consumer Goods</field>
+            <field name="target">target_1b</field>
+            <field name="color">4</field>
+        </record>
+        <record id="subcategory_1b_industrial_goods" model="subcategory">
+            <field name="name">Industrial Goods</field>
+            <field name="target">target_1b</field>
+            <field name="color">11</field>
+        </record>
+        <record id="subcategory_1b_medical_supplies" model="subcategory">
+            <field name="name">Medical Supplies &amp; Equipment</field>
+            <field name="target">target_1b</field>
+            <field name="color">12</field>
+        </record>
+        <record id="subcategory_1b_mixed_goods" model="subcategory">
+            <field name="name">Mixed Goods - Consol Service</field>
+            <field name="target">target_1b</field>
+            <field name="color">2</field>
+        </record>
+        <record id="subcategory_1b_project_cargo" model="subcategory">
+            <field name="name">Project Cargo</field>
+            <field name="target">target_1b</field>
+            <field name="color">3</field>
+        </record>
+        <record id="subcategory_1b_raw_materials" model="subcategory">
+            <field name="name">Raw Materials</field>
+            <field name="target">target_1b</field>
+            <field name="color">4</field>
+        </record>
+        <record id="subcategory_1b_recyclable_materials" model="subcategory">
+            <field name="name">Recyclable Materials</field>
+            <field name="target">target_1b</field>
+            <field name="color">5</field>
+        </record>
+        <record id="subcategory_1b_technical_equipment" model="subcategory">
+            <field name="name">Technical Equipment</field>
+            <field name="target">target_1b</field>
+            <field name="color">6</field>
+        </record>
+        <record id="subcategory_1b_clothes_used" model="subcategory">
+            <field name="name">Used Clothes</field>
+            <field name="target">target_1b</field>
+            <field name="color">7</field>
+        </record>
+        <record id="subcategory_1b_tyres_used" model="subcategory">
+            <field name="name">Used Tyres</field>
+            <field name="target">target_1b</field>
+            <field name="color">8</field>
+        </record>
+ 
+        <!-- Subcategories for Target 2A -->
+        <record id="subcategory_2a_alimentary_products" model="subcategory">
+            <field name="name">Alimentary Products</field>
+            <field name="target">target_2a</field>
+            <field name="color">1</field>
+        </record>
+        <record id="subcategory_2a_auto_motive" model="subcategory">
+            <field name="name">Automotive</field>
+            <field name="target">target_2a</field>
+            <field name="color">9</field>
+        </record>
+        <record id="subcategory_2a_chemical_products" model="subcategory">
+            <field name="name">Chemical Products</field>
+            <field name="target">target_2a</field>
+            <field name="color">3</field>
+        </record>
+        <record id="subcategory_2a_construction_materials" model="subcategory">
+            <field name="name">Construction Materials</field>
+            <field name="target">target_2a</field>
+            <field name="color">10</field>
+        </record>
+        <record id="subcategory_2a_consumer_goods" model="subcategory">
+            <field name="name">Consumer Goods</field>
+            <field name="target">target_2a</field>
+            <field name="color">4</field>
+        </record>
+        <record id="subcategory_2a_industrial_goods" model="subcategory">
+            <field name="name">Industrial Goods</field>
+            <field name="target">target_2a</field>
+            <field name="color">11</field>
+        </record>
+        <record id="subcategory_2a_medical_supplies" model="subcategory">
+            <field name="name">Medical Supplies &amp; Equipment</field>
+            <field name="target">target_2a</field>
+            <field name="color">12</field>
+        </record>
+        <record id="subcategory_2a_mixed_goods" model="subcategory">
+            <field name="name">Mixed Goods - Consol Service</field>
+            <field name="target">target_2a</field>
+            <field name="color">2</field>
+        </record>
+        <record id="subcategory_2a_project_cargo" model="subcategory">
+            <field name="name">Project Cargo</field>
+            <field name="target">target_2a</field>
+            <field name="color">3</field>
+        </record>
+        <record id="subcategory_2a_raw_materials" model="subcategory">
+            <field name="name">Raw Materials</field>
+            <field name="target">target_2a</field>
+            <field name="color">4</field>
+        </record>
+        <record id="subcategory_2a_recyclable_materials" model="subcategory">
+            <field name="name">Recyclable Materials</field>
+            <field name="target">target_2a</field>
+            <field name="color">5</field>
+        </record>
+        <record id="subcategory_2a_technical_equipment" model="subcategory">
+            <field name="name">Technical Equipment</field>
+            <field name="target">target_2a</field>
+            <field name="color">6</field>
+        </record>
+        <record id="subcategory_2a_clothes_used" model="subcategory">
+            <field name="name">Used Clothes</field>
+            <field name="target">target_2a</field>
+            <field name="color">7</field>
+        </record>
+        <record id="subcategory_2a_tyres_used" model="subcategory">
+            <field name="name">Used Tyres</field>
+            <field name="target">target_2a</field>
+            <field name="color">8</field>
+        </record>
+ 
+    </data>
+</odoo>

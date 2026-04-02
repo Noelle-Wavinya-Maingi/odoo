@@ -1,0 +1,344 @@
+<odoo>
+  <!-- List View for omnifreight.carrier -->
+  <record id="view_omnifreight_carrier_list" model="ir.ui.view">
+    <field name="name">omnifreight.carrier.list</field>
+    <field name="model">res.partner</field>
+    <field name="arch" type="xml">
+      <list string="Carriers">
+        <field name="name" />
+        <field name="address" />
+        <field name="last_updated" />
+      </list>
+    </field>
+  </record>
+
+  <!-- List view -->
+  <record id="view_partner_tree_updated" model="ir.ui.view">
+    <field name="name">res.partner.list</field>
+    <field name="model">res.partner</field>
+    <field eval="8" name="priority" />
+    <field name="inherit_id" ref="base.view_partner_tree" />
+    <field name="arch" type="xml">
+      <xpath expr="//field[@name='company_id']" position="after">
+         <field name="contact_tag_display" string="Company Category"/>
+        <field name="last_updated" decoration-danger="is_outdated" />
+        <field name="contact_status_badge" string="Status" />
+      </xpath>
+    </field>
+  </record>
+
+  <!-- Form View for omnifreight.carrier -->
+  <record id="view_omnifreight_carrier_form" model="ir.ui.view">
+    <field name="name">omnifreight.carrier.form</field>
+    <field name="model">res.partner</field>
+    <field name="inherit_id" ref="base.view_partner_form" />
+    <field name="arch" type="xml">
+
+      <xpath expr="//field[@name='company_type']" position="attributes">
+        <attribute name="invisible">is_employee</attribute>
+      </xpath>
+      <xpath expr="//group" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='parent_id']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='type']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='website']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='street']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='street2']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='city']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='state_id']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='zip']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='country_id']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//span[@name='address_name']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='vat']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='function']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='category_id']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+      <!-- <xpath expr="//field[@name='title']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath> -->
+
+      <xpath expr="//h1" position="after">
+        <div class="o_row">
+          <div class="col-6" invisible="is_company or is_employee" style="margin-right: 28px">
+
+            <group name="personal-details" string="Personal Details">
+              <field name="first_name" string="First Name" placeholder="First Name" />
+              <field name="last_name" string="Last Name" placeholder="Last Name" />
+              <field name="role_ids" widget="many2many_tags" string="Role"
+                options="{'no_create': True, 'color_field': 'color'}"
+                placeholder="e.g. Manager, Consultant, ..." domain="[('id', 'in', available_roles)]" />
+              <field name="omnifreight_individual_religion" placeholder="Religion" />
+            </group>
+
+            <group name="address_section" string="ADDRESS">
+              <field name="country_id" string="Country" placeholder="Country" />
+              <field name="unloc_city_id" string="City" placeholder="City"
+                domain="[('country_id', '=', un_country_id)]" />
+              <field name="zip_code_id" string="Zip Code" placeholder="Zip Code"
+                context="{'default_unloc_city_id': unloc_city_id}" />
+              <field name="state_id" string="State"
+                options="{'no_open': True, 'no_quick_create': True}"
+                context="{'default_country_id': country_id}" invisible="not state_required" />
+              <field name="line3" string="P.O. BOX" placeholder="P.O. BOX " />
+              <field name="street" string="Street 1" placeholder="Street ..." />
+              <field name="street2" string="Street 2" placeholder="Street 2 ..." />
+            </group>
+          </div>
+
+          <!-- Company Details -->
+          <div class="col-6">
+            <group name="company_details_section" string="Company Details"
+              invisible="is_employee or is_company">
+              <field name="company_ids" widget="many2many_tags"
+                domain="[('is_company', '=', True)]"
+                string="Associated Companies" invisible="is_employee" placeholder="Associated Companies" />
+              <field name="expert_buy_region_ids" string="Expert Import Region"
+                widget="many2many_tags" options='{"no_open": True, "no_create": True}' placeholder="Expert Import Region" />
+              <field name="expert_ship_region_ids" string="Expert Export Region"
+                widget="many2many_tags" options='{"no_open": True, "no_create": True}' placeholder="Expert Export Region" />
+              <field name="lang" string="Language" placeholder="Language" />
+              <field name="ratings_tag" string="Rating Tags" placeholder="Rating Tags" />
+            </group>
+          </div>
+        </div>
+
+        <div class="o_row" invisible="not is_employee">
+          <div class="col-6" style="margin-right: 28px">
+
+            <group name="personal-details" string="Personal Details">
+              <field name="first_name" string="First Name" placeholder="First Name" />
+              <field name="last_name" string="Last Name" placeholder="Last Name" />
+              <field name="role_ids" widget="many2many_tags"
+                options="{'no_create': True, 'color_field': 'color'}"
+                placeholder="e.g. Manager, Consultant, ..." domain="[('id', 'in', available_roles)]" />
+
+              <group colspan="2" string="ADDRESS">
+                <field name="country_id" string="Country" placeholder="Country" />
+                <field name="unloc_city_id" string="City" placeholder="City"
+                  domain="[('country_id', '=', un_country_id)]" />
+                <field name="zip_code_id" string="Zip Code" placeholder="Zip Code"
+                  context="{'default_unloc_city_id': unloc_city_id}" />
+                <field name="state_id" string="State"
+                  options="{'no_open': True, 'no_quick_create': True}"
+                  context="{'default_country_id': country_id}"
+                  invisible="not state_required" />
+                <field name="line3" string="P.O. BOX" placeholder="P.O. BOX " />
+                <field name="street" string="Street 1" placeholder="Street ..." />
+                <field name="street2" string="Street 2" placeholder="Street 2 ..." />
+              </group>
+            </group>
+          </div>
+          <div class="col-6">
+            <group name="contact_details" string="Contact Details">
+              <field name="email" widget="email" placeholder="Email" />
+              <field name="phone" string="Primary Phone" placeholder="Primary Phone" />
+              <!-- <field name="mobile" string="Secondary Phone" placeholder="Secondary Phone" /> -->
+              <field name="reffered_by" string="Referred By" placeholder="Referred By"/>
+            </group>
+          </div>
+        </div>
+
+        <div class="col-6">
+          <group name="contact_details" string="Contact Details"
+            invisible="is_company or is_employee">
+            <field name="email" widget="email" placeholder="Email" />
+            <field name="phone" string="Primary Phone" placeholder="Primary Phone" />
+            <!-- <field name="mobile" string="Mobile(WhatsApp) Phone" placeholder="Mobile(WhatsApp) Phone" /> -->
+          </group>
+        </div>
+
+        <div class="o_row" invisible="not is_company">
+          <label for="company_category" string="Company Category" />
+          <field name="company_category" widget="radio" placeholder="Company Category" />
+        </div>
+
+        <!-- Bottom Sections: Compliance and Targeting -->
+        <div class="o_row" invisible="not is_company">
+          <div class="col-6" style="margin-right: 28px">
+            <group name="company_details_section" string="Company Details">
+              <field name="supplier_type" string="Supplier Type"
+                invisible="company_category == 'client' or company_category == 'organizations'" placeholder="Supplier Type" />  
+              <!-- <label for="street" string="ADDRESS" /> -->
+              <span style="display: block; font-weight: 500; border-bottom: 0.5px solid #ccc;">
+                ADDRESS</span>
+              <field name="country_id" string="Country" placeholder="Country" />
+              <field name="unloc_city_id" string="City"
+                domain="[('country_id', '=', un_country_id)]" placeholder="City" />
+              <field name="zip_code_id" string="Zip Code"
+                context="{'default_unloc_city_id': unloc_city_id}" placeholder="Zip Code" />
+              <field name="state_id" string="State"
+                options="{'no_open': True, 'no_quick_create': True}"
+                context="{'default_country_id': country_id}" invisible="not state_required" />
+              <field name="line3" string="P.O. BOX" placeholder="P.O. BOX " />
+              <field name="street" string="Street 1" placeholder="Street ..." />
+              <field name="street2" string="Street 2" placeholder="Street 2 ..." />
+              <field name="lang" string="Language" placeholder="Language" />
+              <field name="ratings_tag" string="Rating Tags" placeholder="Rating Tags" />
+              <field name="website" string="Website" widget="url"
+                placeholder="e.g. https://www.odoo.com" />
+            </group>
+          </div>
+          <div class="col-6">
+            <group name="compliance_section" string="Compliance Information"
+              invisible="company_type in ['individual']">
+              <field name="vat" placeholder="e.g. BE0477472701" readonly="parent_id" />
+              <field name="own_eori_number"
+                invisible="not is_in_eu"
+                string="EORI Number" placeholder="EORI Number" />
+            </group>
+          </div>
+        </div>
+
+        <div class="o_row col-6" name="targeting_and_contact" invisible="not is_company">
+          <div class="col-2" style="margin-right: 28px">
+            <group name="contact_details" string="Company Contact Details">
+              <field name="email" widget="email" placeholder="Email" />
+              <field name="phone" string="Primary Phone" placeholder="Primary Phone" />
+              <!-- <field name="mobile" string="Secondary Phone" placeholder="Secondary Phone" /> -->
+              <field name="reffered_by" string="Referred By" placeholder="Referred By"/>
+            </group>
+          </div>
+        </div>
+        <div class="o_row" invisible="not is_company">
+          <div class="col-6" name="targeting_section" style="margin-right: 28px;">
+            <group name="targeting_section" string="Targeting &amp; Segmentation"
+              invisible="company_type in ['company'] and company_category in ['supplier']">
+              <span style="display: block; font-weight: 500; border-bottom: 0.5px solid #ccc;">
+                SEGMENT ONE</span>
+              <field name="segment_id" widget="many2many_checkboxes" />
+              <field name="target_segment_one" string="Target" invisible="not segment_id" placeholder="Target Segment" />
+              <field name="hide_subcategories" invisible="1" />
+              <field name="subcategory_ids" widget="many2many_tags"
+                options="{'color_field': 'color'}"
+                invisible="not target_segment_one or target_segment_one == 'target_1c'" required="requires_subcategory" placeholder="Subcategories" />
+              <span
+                style="display: block; font-weight: 500; border-bottom: 0.5px solid #ccc; margin-top: 15px;">
+                SEGMENT TWO</span>
+              <field name="segment_id_two" widget="many2many_checkboxes" string="Segment" />
+              <field name="target_segment_two" string="Target" invisible="not segment_id_two" placeholder="Target Segment Two" />
+              <field name="subcategory_ids_segment_two" widget="many2many_tags"
+                options="{'color_field': 'color'}"
+                invisible="not target_segment_two or target_segment_two in ['target_2c', 'target_2b']" string="Subcategories"
+                required="requires_subcategory_two" placeholder="Subcategories Segment Two" />
+            </group>
+          </div>
+        </div>
+        <div class="o_row">
+          <div class="col-6" style="margin-right: 28px">
+            <group name="completion_status" string="Completion Status">
+              <field name="is_contact_completed" string="Completion Status"
+                widget="boolean_toggle" placeholder="Completion Status" />
+            </group>
+          </div>
+        </div>
+
+      </xpath>
+    </field>
+  </record>
+
+  <!-- Remove Smart Buttons -->
+  <!-- <record id="res_partner_view_buttons" model="ir.ui.view">
+    <field name="name">res.partner.view.buttons</field>
+    <field name="model">res.partner</field>
+    <field name="inherit_id" ref="base.view_partner_form" />
+    <field name="arch" type="xml">
+      <xpath expr="//button[@name='action_view_sale_order']" position="attributes">
+        <attribute name="invisible">company_category in ['supplier'] or is_employee</attribute>
+      </xpath>
+    </field>
+  </record> -->
+
+  <record id="partner_view_buttons" model="ir.ui.view">
+    <field name="name">partner.views.buttons</field>
+    <field name="model">res.partner</field>
+    <field name="inherit_id" ref="base.view_partner_form" />
+    <field name="arch" type="xml">
+      <xpath expr="//button[@name='action_view_partner_invoices']" position="attributes">
+        <attribute name="invisible">company_category in ['supplier'] or is_employee</attribute>
+      </xpath>
+    </field>
+  </record>
+
+  <record id="res_partner_view_form" model="ir.ui.view">
+    <field name="name">res.partner.view.form.inherit.hr</field>
+    <field name="model">res.partner</field>
+    <field name="inherit_id" ref="base.view_partner_form" />
+    <field name="arch" type="xml">
+      <xpath expr="//button[@name='action_open_employees']" position="attributes">
+        <attribute name="invisible">not is_employee</attribute>
+      </xpath>
+    </field>
+  </record>
+
+  <!-- <record id="view_partners_form_crm1" model="ir.ui.view">
+    <field name="name">view.res.partner.form.crm.inherited1</field>
+    <field name="model">res.partner</field>
+    <field name="inherit_id" ref="base.view_partner_form" />
+    <field name="arch" type="xml">
+      <xpath expr="//button[@name='action_view_opportunity']" position="attributes">
+        <attribute name="invisible">is_employee or company_category in ['supplier']</attribute>
+      </xpath>
+    </field>
+  </record> -->
+
+  <record id="view_partner_form" model="ir.ui.view">
+    <field name="name">res.partner.form</field>
+    <field name="model">res.partner</field>
+    <field name="inherit_id" ref="base.view_partner_form" />
+    <field name="arch" type="xml">
+      <xpath expr="//page[@name='contact_addresses']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//page[@name='internal_notes']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//page[@name='sales_purchases']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+    </field>
+  </record>
+
+  <record id="res_partner_kanban_view_extension" model="ir.ui.view">
+    <field name="name">res.partner.kanban.rating</field>
+    <field name="model">res.partner</field>
+    <field name="inherit_id" ref="base.res_partner_kanban_view" />
+    <field name="arch" type="xml">
+      <!-- Add ratings_tag display after email -->
+      <xpath expr="//field[@name='email']" position="after">
+        <div class="mt-2">
+          <field name="ratings_tag" widget="badge" decoration-success="ratings_tag == 'easy'"
+            decoration-warning="ratings_tag == 'neutral'"
+            decoration-danger="ratings_tag == 'challenging'" placeholder="Rating Tags"
+          />
+        </div>
+      </xpath>
+    </field>
+  </record>
+
+</odoo>

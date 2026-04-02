@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_sale_order_transport_rate_form" model="ir.ui.view">
+        <field name="name">sale.order.transport.rate.form</field>
+        <field name="model">sale.order.transport.rate</field>
+        <field name="arch" type="xml">
+            <form string="Sale Order Transport Rate">
+                <header>
+                    <button name="action_duplicate_rate" type="object" string="Duplicate Rate" 
+                            class="btn-primary" invisible="not show_expiry_warning" 
+                            help="Create a copy of this expired rate with a new validity date"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="haulier_region_ids" invisible="1" />
+                        <field name="region_name" readonly="1" invisible="1" />
+                        <field name="show_expiry_warning" invisible="1" />
+                    </group>
+                    <group style="display: flex;">
+                            <field name="rate_valid_until" style="width: 80%;" string="Valid Until" placeholder="Select Date" 
+                                   decoration-warning="show_expiry_warning" readonly="show_expiry_warning" />
+                            <i class="fa fa-warning text-danger" invisible="not show_expiry_warning" title="This date has expired" />
+                    </group>
+                    <group>
+                        <field name="container_type" placeholder="Select Container Type" readonly="show_expiry_warning" />
+                        <field name="is_distance_based" readonly="show_expiry_warning" />
+                        <field name="distance_range_ids" nolabel="True" invisible="not is_distance_based" placeholder="Distance Range" 
+                               readonly="show_expiry_warning" />
+                    </group>
+                    <group>
+                        <field name="supplier_id" domain="[('company_category', '=', 'supplier')]" required="1" placeholder="Select Supplier" 
+                               readonly="show_expiry_warning" />
+                        <field name="currency_id" widget="many2one" readonly="show_expiry_warning" />
+                    </group>
+                    <group>
+                        <group>
+                            <field name="base_price" widget="monetary" options="{'currency_field': 'currency_id'}" invisible="is_distance_based" placeholder="Base Price" 
+                                   readonly="show_expiry_warning" />
+                            <field name="surcharge_fee" options="{'currency_field': 'currency_id'}" placeholder="Hazmat Surcharge" invisible="not has_hazardous_content"
+                                   readonly="show_expiry_warning" />
+                            <field name="transport_city" invisible="is_distance_based or context.get('active_model') == 'sale.order'" string="City" placeholder="City" 
+                                   readonly="show_expiry_warning" />
+                            <field name="transport_port" invisible="is_distance_based or context.get('active_model') == 'sale.order'" string="Port" placeholder="Port" 
+                                   readonly="show_expiry_warning" />
+                            <field name="transport_city_comp" invisible="1" string="City" placeholder="City" />
+                        <field name="transport_port_comp" invisible="1" string="Port" placeholder="Port" />
+                        </group>
+                    </group>
+
+                    <group>
+                        <field name="price_per_extra_km" widget="monetary"
+                            options="{'currency_field': 'currency_id'}" invisible="not is_distance_based" placeholder="Price per Extra KM" 
+                            readonly="show_expiry_warning" />
+                        <field name="pickup_type"  placeholder="Pickup Type" readonly="show_expiry_warning" required="1" />    
+                        <field name="additional_notes" placeholder="Additional Notes" readonly="show_expiry_warning" />
+                    </group>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sale_order_transport_rate" model="ir.actions.act_window">
+        <field name="name">Sale Order Transport Rates</field>
+        <field name="res_model">sale.order.transport.rate</field>
+        <field name="view_mode">form</field>
+    </record>
+</odoo>

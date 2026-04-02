@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_operations_config_settings" model="ir.ui.view">
+        <field name="name">Operations Settings</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <form string="Operations Settings" class="o_config_form">
+                <header>
+                    <button string="Apply" type="object" name="execute" class="btn-primary"/>
+                    <button string="Cancel" type="object" name="cancel" special="cancel"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-info" role="alert" style="margin-bottom:0px;">
+                        <p>
+                            <i class="fa fa-industry"/> Configure your industry settings.
+                            Changes will affect all operations modules.
+                        </p>
+                    </div>
+                    
+                    <group>
+                        <group string="Industry Selection">
+                            <field name="company_industry" widget="radio" class="o_radio_horizontal"/>
+                            <field name="industry_config_id" invisible="1"/>
+                            
+                            <label for="industry_config_id"/>
+                            <div name="industry_description">
+                                <field name="industry_config_id" widget="statinfo" nolabel="1"/>
+                            </div>
+                        </group>
+                        
+                        <group string="Industry-specific Settings" invisible="company_industry == False">
+                            <field name="shipping_type" invisible="company_industry != 'shipping'" required="company_industry == 'shipping'"/>
+                            <field name="trading_type" invisible="company_industry != 'trading'"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Operation Settings">
+                            <group>
+                                <group string="Numbering">
+                                    <field name="operation_prefix"/>
+                                    <field name="auto_operation_numbering"/>
+                                </group>
+                                <group string="Workflow">
+                                    <field name="approval_required"/>
+                                    <field name="multi_level_approval"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page string="Document Settings">
+                            <group>
+                                <group string="Documents">
+                                    <field name="use_digital_signature"/>
+                                    <field name="document_archive"/>
+                                </group>
+                                <group string="Notifications">
+                                    <field name="notify_on_creation"/>
+                                    <field name="notify_on_completion"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page string="Accounting">
+                            <group>
+                                <group string="Invoicing">
+                                    <field name="auto_create_invoice"/>
+                                    <field name="auto_create_picking"/>
+                                </group>
+                                <group string="Default Accounts">
+                                    <!-- Now using direct fields from res.config.settings -->
+                                    <field name="industry_income_account" 
+                                           widget="selection"/>
+                                    <field name="industry_expense_account" 
+                                           widget="selection"/>
+                                    <field name="industry_journal_id" 
+                                           widget="selection"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page string="Modules" groups="base.group_system">
+                            <group string="Install Additional Modules">
+                                <field name="module_shipping"/>
+                                <field name="module_trading"/>
+                                <field name="module_manufacturing"/>
+                            </group>
+                        </page>
+                        
+                        <page string="Feature Preview">
+                            <group>
+                                <group string="Active Features">
+                                    <field name="show_budget_tab"/>
+                                    <field name="show_voyage_tab"/>
+                                    <field name="show_quality_tab"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+      <record id="view_operations_list_config_settings" model="ir.ui.view">
+        <field name="name">Operations Settings</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="company_industry"/>
+                <field name="industry_config_id"/>
+                <field name="industry_income_account"/>
+                <field name="industry_expense_account"/>
+                <field name="industry_journal_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_operations_settings" model="ir.actions.act_window">
+        <field name="name">Operations Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form,list</field>
+        <field name="view_id" ref="view_operations_config_settings"/>
+        <field name="target">new</field>
+        <field name="context">{'module': 'operations'}</field>
+    </record>
+
+    <menuitem id="menu_operations_settings"
+              name="Operations"
+              parent="base.menu_administration"
+              sequence="100"
+              action="action_operations_settings"/>
+</odoo>
