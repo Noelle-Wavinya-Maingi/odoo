@@ -1,4 +1,5 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -37,8 +38,11 @@ class TradingTrade(models.Model):
         help='Total quantity from all linked lots'
     )
 
-    quantity = fields.Float(string='Purchase Quantity', required=True)
-    price = fields.Monetary(string='Purchase Price', required=True)
+    # Purchase side fields (can be 0 if no purchase yet)
+    quantity = fields.Float(string='Purchase Quantity', required=False, default=0.0)
+    price = fields.Monetary(string='Purchase Price', required=False)
+    
+    # Sales side fields
     sales_price = fields.Monetary(string="Sales Price")
 
     currency_id = fields.Many2one(
@@ -69,6 +73,9 @@ class TradingTrade(models.Model):
         help="Sale orders that have sold from this trade"
     )
     
+    # Purchase Order linked to this trade
+    purchase_id = fields.Many2one('purchase.order', string='Purchase Order', ondelete='set null')
+    
     # Sales totals
     total_sold_quantity = fields.Float(
         string='Total Sold Quantity',
@@ -93,11 +100,19 @@ class TradingTrade(models.Model):
         help='Average price per unit from all sales'
     )
     
-    remaining_quantity = fields.Float(
-        string='Remaining Quantity',
-        compute='_compute_sales_totals',
+    # Position tracking
+    open_position_quantity = fields.Float(
+        string='Open Position Quantity',
+        compute='_compute_position',
         store=True,
-        help='Quantity still available to sell (Purchase Qty - Sold Qty)'
+        help='Net open position: Purchase Qty - Sold Qty (positive = long, negative = short)'
+    )
+    
+    is_fully_matched = fields.Boolean(
+        string='Fully Matched',
+        compute='_compute_position',
+        store=True,
+        help='Both purchase and sale exist and quantities match (position closed)'
     )
     
     # P&L calculations
@@ -106,7 +121,7 @@ class TradingTrade(models.Model):
         compute='_compute_pnl',
         store=True,
         currency_field='currency_id',
-        help='Profit/Loss on sold portion (Sales Value - (Sold Qty × Purchase Price))'
+        help='Profit/Loss on matched portion (when both purchase and sale exist)'
     )
     
     unrealized_pnl = fields.Monetary(
@@ -114,7 +129,7 @@ class TradingTrade(models.Model):
         compute='_compute_pnl',
         store=True,
         currency_field='currency_id',
-        help='Profit/Loss on remaining quantity (based on current market price)'
+        help='Profit/Loss on unmatched portion (open position)'
     )
     
     current_price = fields.Float(
@@ -136,32 +151,24 @@ class TradingTrade(models.Model):
         string='P&L %',
         compute='_compute_pnl',
         store=True,
-        help='Profit/Loss Percentage based on total purchase cost'
+        help='Profit/Loss Percentage'
     )
     
     # Value calculations
     total_purchase_cost = fields.Monetary(
         string='Total Purchase Cost',
-        compute='_compute_purchase_cost',
+        compute='_compute_costs',
         store=True,
         currency_field='currency_id',
         help='Total cost of purchase (Quantity × Purchase Price)'
     )
     
-    sold_cost = fields.Monetary(
-        string='Cost of Goods Sold',
-        compute='_compute_purchase_cost',
+    total_sales_cost_basis = fields.Monetary(
+        string='Total Sales Cost Basis',
+        compute='_compute_costs',
         store=True,
         currency_field='currency_id',
-        help='Cost of sold portion (Sold Qty × Purchase Price)'
-    )
-    
-    remaining_cost = fields.Monetary(
-        string='Remaining Cost',
-        compute='_compute_purchase_cost',
-        store=True,
-        currency_field='currency_id',
-        help='Cost of remaining quantity (Remaining Qty × Purchase Price)'
+        help='Cost basis for sold items (Sold Qty × Purchase Price)'
     )
     
     # Performance metrics
@@ -169,35 +176,14 @@ class TradingTrade(models.Model):
         string='Win Rate (%)',
         compute='_compute_performance',
         store=True,
-        help='Percentage of profitable sales'
+        help='Percentage of profitable trades'
     )
     
-    total_profitable_sales = fields.Integer(
-        string='Profitable Sales',
-        compute='_compute_performance',
-        store=True,
-        help='Number of profitable sale orders'
-    )
-    
-    total_loss_sales = fields.Integer(
-        string='Loss Sales',
-        compute='_compute_performance',
-        store=True,
-        help='Number of loss-making sale orders'
-    )
-    
-    # Purchase order link
-    purchase_id = fields.Many2one('purchase.order', string='Purchase Order', ondelete='cascade')
-    purchase_count = fields.Integer(
-        string="Purchase Orders",
-        compute="_compute_purchase_count"
-    )
-    
-    # Computed fields - Sums across all lots
+    # Computed fields
     on_hand_quantity = fields.Float(
         string='On Hand Quantity',
         compute='_compute_on_hand_quantity',
-        store=False,
+        store=True,
         help="Total quantity available across all lots (from stock)"
     )
     
@@ -215,21 +201,109 @@ class TradingTrade(models.Model):
     )
     
     sale_count = fields.Integer(
-        string="Sale Orders",
+        string="Sale Orders Count",
         compute="_compute_sale_count"
     )
     
-    @api.depends('lot_ids', 'lot_ids.product_qty')
-    def _compute_total_lot_quantity(self):
-        """Compute total quantity from all lots"""
+    purchase_count = fields.Integer(
+        string="Purchase Orders",
+        compute="_compute_purchase_count"
+    )
+    
+    @api.depends('quantity', 'total_sold_quantity', 'purchase_id', 'sale_order_ids', 'sale_order_ids.state')
+    def _compute_position(self):
+        """Calculate open position and check if fully matched."""
         for record in self:
-            total = 0.0
-            for lot in record.lot_ids:
-                total += lot.product_qty
-                _logger.info(f"Lot {lot.name}: product_qty = {lot.product_qty}")
-            record.total_lot_quantity = total
-            _logger.info(f"Trade {record.name}: Total lot quantity = {total}")
+        
+            # Determine which sides actually exist based on linked documents
+            has_purchase_doc = bool(record.purchase_id)
+            has_sale_docs = bool(record.sale_order_ids.filtered(lambda so: so.state in ['sale', 'done']))
+        
+            # CORRECTED LOGIC: Open position depends on what exists
+            if has_purchase_doc and not has_sale_docs:
+                # Only purchase exists = LONG position
+                _logger.warning(f"   → Only purchase: LONG position of {open_qty}")
+            elif has_sale_docs and not has_purchase_doc:
+                # Only sale exists = SHORT position
+                open_qty = -record.total_sold_quantity
+            elif has_purchase_doc and has_sale_docs:
+                # Both exist: net position
+                open_qty = record.quantity - record.total_sold_quantity
+            else:
+                open_qty = 0
+        
+            record.open_position_quantity = open_qty
+        
+            # Determine has_purchase and has_sale for matching logic
+            has_purchase = has_purchase_doc and record.quantity > 0
+            has_sale = has_sale_docs and record.total_sold_quantity > 0
+            quantities_match = abs(open_qty) < 0.001 if has_purchase and has_sale else False
+        
+            record.is_fully_matched = has_purchase and has_sale and quantities_match
+        
 
+    @api.depends('total_sales_value', 'total_sales_cost_basis', 'open_position_quantity', 'current_price', 'trade_type', 'price', 'quantity', 'total_sold_quantity', 'is_fully_matched')
+    def _compute_pnl(self):
+        """Calculate P&L - Realized when both sides exist, Unrealized for open position"""
+        for record in self:
+        
+            # Determine which sides exist (use same logic as _compute_position)
+            has_purchase_doc = bool(record.purchase_id) and record.quantity > 0
+            has_sale_docs = bool(record.sale_order_ids.filtered(lambda so: so.state in ['sale', 'done'])) and record.total_sold_quantity > 0
+        
+            # REALIZED P&L: Only when BOTH purchase AND sale exist
+            if has_purchase_doc and has_sale_docs:
+                matched_qty = min(record.quantity, record.total_sold_quantity)
+            
+                if record.trade_type == 'long':
+                    realized_value = 0
+                    for order in record.sale_order_ids.filtered(lambda so: so.state in ['sale', 'done']):
+                        for line in order.order_line:
+                            if line.product_id == record.product_id:
+                                realized_value += line.price_unit * line.product_uom_qty
+                    record.realized_pnl = realized_value - (matched_qty * record.price)
+                else:
+                    record.realized_pnl = record.total_sales_value - (matched_qty * record.price)
+            
+            else:
+                record.realized_pnl = 0.0
+        
+            # UNREALIZED P&L: Calculate based on open position
+            if record.open_position_quantity != 0 and record.current_price > 0:
+                open_qty = abs(record.open_position_quantity)
+            
+                if record.open_position_quantity > 0:
+                    # LONG position (own more than sold)
+                    if record.price > 0:
+                        record.unrealized_pnl = open_qty * (record.current_price - record.price)
+                    else:
+                        record.unrealized_pnl = 0.0
+                else:
+                    # SHORT position (sold more than owned)
+                    # Use sales_price if available, otherwise average_sale_price
+                    sale_price_to_use = record.sales_price if record.sales_price > 0 else record.average_sale_price
+                    if sale_price_to_use > 0:
+                        record.unrealized_pnl = open_qty * (sale_price_to_use - record.current_price)
+                    else:
+                        _logger.warning(f"   ⚠️ SHORT but no sale price")
+            else:
+                record.unrealized_pnl = 0.0
+
+            # TOTAL P&L
+            record.total_pnl = record.realized_pnl + record.unrealized_pnl
+        
+            # P&L PERCENTAGE
+            if record.total_purchase_cost > 0:
+                record.pnl_percentage = (record.total_pnl / record.total_purchase_cost) * 100
+            elif record.total_sales_value > 0:
+                record.pnl_percentage = (record.total_pnl / record.total_sales_value) * 100
+            else:
+                record.pnl_percentage = 0.0
+        
+            # AUTO-CLOSE
+            if record.is_fully_matched and record.status == 'confirmed':
+                record.status = 'closed'
+            
     @api.depends('sale_order_ids', 'sale_order_ids.state', 'sale_order_ids.order_line')
     def _compute_sales_totals(self):
         """Compute sales totals from confirmed sale orders"""
@@ -241,88 +315,60 @@ class TradingTrade(models.Model):
             
             for order in confirmed_orders:
                 for line in order.order_line:
-                    total_qty += line.product_uom_qty
-                    total_value += line.price_unit * line.product_uom_qty
+                    if line.product_id == record.product_id:
+                        total_qty += line.product_uom_qty
+                        total_value += line.price_unit * line.product_uom_qty
             
             record.total_sold_quantity = total_qty
             record.total_sales_value = total_value
             record.average_sale_price = total_value / total_qty if total_qty > 0 else 0.0
-            record.remaining_quantity = record.quantity - total_qty
             
-            _logger.info(f"📊 Trade {record.name}: Sold {total_qty}/{record.quantity}, Sales Value: {total_value}")
+            if total_qty > 0 and record.trade_type == 'long':
+                record.sales_price = record.average_sale_price
+            
 
     @api.depends('quantity', 'price', 'total_sold_quantity')
-    def _compute_purchase_cost(self):
-        """Compute purchase cost totals"""
+    def _compute_costs(self):
+        """Compute purchase costs and sales cost basis"""
         for record in self:
-            record.total_purchase_cost = record.quantity * record.price
-            record.sold_cost = record.total_sold_quantity * record.price
-            record.remaining_cost = record.remaining_quantity * record.price
-
-    @api.depends('total_sales_value', 'sold_cost', 'remaining_quantity', 'current_price', 'trade_type')
-    def _compute_pnl(self):
-        """Compute P&L calculations"""
-        for record in self:
-            # Realized P&L = Sales Value - Cost of Sold Goods
-            record.realized_pnl = record.total_sales_value - record.sold_cost
-            
-            # Unrealized P&L = Remaining Quantity × (Current Price - Purchase Price)
-            if record.remaining_quantity > 0 and record.current_price:
-                if record.trade_type == 'long':
-                    record.unrealized_pnl = record.remaining_quantity * (record.current_price - record.price)
-                else:  # short
-                    record.unrealized_pnl = record.remaining_quantity * (record.price - record.current_price)
+            if record.quantity > 0 and record.price > 0:
+                record.total_purchase_cost = record.quantity * record.price
+                # Cost basis for sold items = sold quantity * purchase price
+                record.total_sales_cost_basis = record.total_sold_quantity * record.price
             else:
-                record.unrealized_pnl = 0.0
-            
-            # Total P&L
-            record.total_pnl = record.realized_pnl + record.unrealized_pnl
-            
-            # P&L Percentage
-            if record.total_purchase_cost > 0:
-                record.pnl_percentage = (record.total_pnl / record.total_purchase_cost) * 100
-            else:
-                record.pnl_percentage = 0.0
-
+                record.total_purchase_cost = 0.0
+                record.total_sales_cost_basis = 0.0
+                
     @api.depends('sale_order_ids', 'sale_order_ids.state', 'sale_order_ids.order_line', 'price')
     def _compute_performance(self):
-        """Compute win rate and other performance metrics"""
+        """Compute win rate based on realized P&L"""
         for record in self:
-            profitable = 0
-            loss = 0
-            
-            for order in record.sale_order_ids.filtered(lambda so: so.state in ['sale', 'done']):
-                for line in order.order_line:
-                    sale_value = line.price_unit * line.product_uom_qty
-                    cost_value = line.product_uom_qty * record.price
-                    pnl = sale_value - cost_value
-                    
-                    if pnl > 0:
-                        profitable += 1
-                    elif pnl < 0:
-                        loss += 1
-            
-            record.total_profitable_sales = profitable
-            record.total_loss_sales = loss
-            
-            total = profitable + loss
-            record.win_rate = (profitable / total * 100) if total > 0 else 0.0
+            if record.realized_pnl > 0:
+                record.win_rate = 100.0
+            elif record.realized_pnl < 0:
+                record.win_rate = 0.0
+            else:
+                record.win_rate = 0.0
 
     @api.depends('lot_ids', 'lot_ids.product_qty')
+    def _compute_total_lot_quantity(self):
+        """Compute total quantity from all lots"""
+        for record in self:
+            total = 0.0
+            for lot in record.lot_ids:
+                total += lot.product_qty
+            record.total_lot_quantity = total
+
+    @api.depends('lot_ids', 'lot_ids.quant_ids', 'lot_ids.quant_ids.quantity')
     def _compute_on_hand_quantity(self):
         """Compute total on-hand quantity from all lots"""
         for record in self:
+            total_qty = 0.0
             if record.lot_ids:
-                total_qty = 0.0
                 for lot in record.lot_ids:
-                    qty = lot.product_qty
-                    total_qty += qty
-                    _logger.info(f"   Lot {lot.name}: {qty} units on hand")
-                record.on_hand_quantity = total_qty
-                _logger.info(f"📊 Trade {record.name}: Total on-hand quantity across {len(record.lot_ids)} lots = {total_qty}")
-            else:
-                record.on_hand_quantity = 0.0
-                _logger.info(f"📊 Trade {record.name}: No lots linked, on-hand quantity = 0")
+                    quant_qty = sum(lot.quant_ids.filtered(lambda q: q.location_id.usage == 'internal').mapped('quantity'))
+                    total_qty += quant_qty
+            record.on_hand_quantity = total_qty
 
     @api.depends('lot_ids')
     def _compute_lot_count(self):
@@ -341,12 +387,13 @@ class TradingTrade(models.Model):
     def _compute_all_trade_fields(self):
         """Trigger recomputation of all computed fields"""
         for record in self:
-            record._compute_total_lot_quantity()
             record._compute_sales_totals()
-            record._compute_purchase_cost()
+            record._compute_position()
+            record._compute_costs()
             record._compute_pnl()
             record._compute_performance()
             record._compute_on_hand_quantity()
+            record._compute_total_lot_quantity()
 
     def action_view_purchase(self):
         self.ensure_one()
@@ -387,14 +434,6 @@ class TradingTrade(models.Model):
             action['domain'] = [('id', 'in', self.sale_order_ids.ids)]
         return action
     
-    @api.onchange('on_hand_quantity')
-    def _onchange_quantity(self):
-        """Close a trade when the on-hand quantity is 0"""
-        for record in self:
-            if record.on_hand_quantity == 0 and record.status == 'confirmed':
-                _logger.info(f"🏁 Trade {record.name} closed because on-hand quantity reached 0")
-                record.status = 'closed'
-
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
@@ -415,7 +454,7 @@ class TradingTrade(models.Model):
         return super().create(vals_list)
     
     def action_confirm(self):
-        """Confirms the trade!"""
+        """Open the trade for trading"""
         for trade in self:
             if trade.status == 'draft':
                 _logger.info(f"🌼 Confirming trade {trade.name}")
@@ -428,7 +467,7 @@ class TradingTrade(models.Model):
         result = super().write(vals)
         
         # Trigger recomputation if relevant fields changed
-        if any(field in vals for field in ['quantity', 'price', 'current_price', 'lot_ids']):
+        if any(field in vals for field in ['quantity', 'price', 'current_price', 'lot_ids', 'sale_order_ids', 'purchase_id']):
             self._compute_all_trade_fields()
         
         return result

@@ -1,94 +1,3 @@
-# from odoo import models, fields, api
-# import logging
-
-# _logger = logging.getLogger(__name__)
-
-
-# class SaleOrder(models.Model):
-#     _inherit = 'sale.order'
-
-#     trade_id = fields.Many2one('trading.trade', string="Related Trade")
-#     futures_id = fields.Many2one(
-#         'trading.futures', string='Related Future', domain="[('status', '=', 'open')]", ondelete='set null',
-#         index=True,)
-
-#     @api.onchange('futures_id')
-#     def _onchange_futures_id(self):
-#         """Update the sale order ids in the trade of the futures"""
-#         if self.futures_id:
-#             _logger.info("✨ I am linking the sale to a trade")
-#             self.trade_id = self.futures_id.trade_id
-
-#     def action_confirm(self):
-#         """Override confirm method to post activity when sales order is confirmed"""
-#         result = super().action_confirm()
-
-#         for order in self:
-#             if not order.futures_id or order.futures_id.status != 'open':
-#                 continue
-
-#             sale_qty = sum(order.order_line.mapped('product_uom_qty'))
-
-#             contract_qty = order.futures_id.open_balance
-
-#             _logger.info(
-#                 f"🌼 Sale Qty {sale_qty}, Contract Qty: {contract_qty}")
-
-#             if contract_qty == 0:
-
-#                 order.futures_id.write(
-#                     {'status': 'closed', 'close_date': fields.Date.today()})
-#                 order.futures_id._compute_balances()
-#                 order.futures_id._compute_values()
-#                 order.futures_id._compute_sales_values()
-#                 order.futures_id._compute_net_value()
-#                 order.futures_id._compute_pnl_details()
-#                 order.futures_id._compute_pnl()
-#                 # Post an activity on the future
-#                 order.activity_schedule(
-#                     'mail.mail_activity_data_todo',
-#                     summary='Sales Order Confirmed - Close Future Verification',
-#                     note=f"""
-#                         <p>The following sales order has been confirmed:</p>
-#                         <ul>
-#                             <li><strong>Future:</strong> <a href=# data-oe-model=trading.futures data-oe-id={order.futures_id.id}>{order.futures_id.name}</a></li>
-#                             <li><strong>Customer:</strong> {order.partner_id.name}</li>
-#                             <li><strong>Date:</strong> {fields.Datetime.now()}</li>
-#                             <li><strong>Total:</strong> {order.amount_total}</li>
-#                         </ul>
-#                         <p>Related future has been closed. If wrongly closed kindly reset the quotation.</p>
-#                     """,
-#                     user_id=order.user_id.id or self.env.user.id
-#                 )
-
-#                 # Log a message on the sales order
-#                 _logger.info(
-#                     f"Activity posted on future {order.futures_id.name} from Sales Order {order.name}")
-#             else:
-#                 order.futures_id._compute_balances()
-#                 order.futures_id._compute_values()
-#                 order.futures_id._compute_sales_values()
-#                 order.futures_id._compute_net_value()
-#                 order.futures_id._compute_pnl_details()
-#                 order.futures_id._compute_pnl()
-#                 message = f"""
-#                 ❗ Future NOT closed
-#                 Quantity mismatch detected:
-#                 <ul>
-#                     <li>Sale Order Quantity: {sale_qty}</li>
-#                     <li>Contract Quantity: {contract_qty}</li>
-#                 </ul>
-#                 Please review before closing the future.
-#             """
-#                 order.futures_id.message_post(body=message)
-
-#                 order.message_post(body=message)
-
-#                 _logger.warning(
-#                     f"Future NOT closed due to quantity mismatch for {order.name}")
-
-#         return result
-
 from odoo import models, fields, api, _
 import logging
 
@@ -99,8 +8,7 @@ class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     trade_id = fields.Many2one('trading.trade', string="Related Trade")
-    # Remove futures_id field - we'll link directly to trade
-
+    
     @api.onchange('trade_id')
     def _onchange_trade_id(self):
         """When trade is selected, you can show trade info"""
@@ -171,14 +79,17 @@ class SaleOrder(models.Model):
             
             product = order.order_line[0].product_id if order.order_line else False
             
+            # Determine trade type based on sale order type (default to long for sales)
+            trade_type = 'short'
+            
             trade_vals = {
-                'trade_type': 'long',  # Default to long
+                'trade_type': trade_type,
                 'quantity': total_qty,
                 'sales_price': avg_price,
                 'currency_id': order.currency_id.id,
                 'status': 'confirmed',
                 'product_id': product.id if product else False,
-                'sale_order_ids': [(4, order.id)],  # Link this sale order
+                'sale_order_ids': [(4, order.id)],
             }
             
             trade = self.env['trading.trade'].create(trade_vals)
@@ -192,10 +103,15 @@ class SaleOrder(models.Model):
                     <li><strong>Quantity:</strong> {trade.quantity}</li>
                     <li><strong>Price:</strong> {trade.price} {trade.currency_id.symbol}</li>
                 </ul>
+                <p><strong>Note:</strong> This is a sales trade. If you need to link to a purchase trade, please update the trade field manually.</p>
             """)
             
             return trade
             
         except Exception as e:
-            _logger.error(f"Error creating trade for sale order {order.name}: {str(e)}", exc_info=True)
+            order.message_post(body=f"""
+                <p>❌ <strong>Error creating trade:</strong></p>
+                <p>{str(e)}</p>
+                <p>Please create the trade manually.</p>
+            """)
             return False
