@@ -33,6 +33,7 @@
         'views/stock_views.xml',
         'views/sale_view.xml',
         'views/purchase_order.xml',
+        'views/account_move_line_view.xml',
     ],
 
     # Demo data (optional, can be omitted if not needed)
