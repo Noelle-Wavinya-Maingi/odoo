@@ -20,6 +20,13 @@
                        string="Trade"
                        options="{'no_create': True}"/>
             </xpath>
+
+            <xpath expr="//group[@name='utm_link']" position="after">
+                <group name="group_trade_info" string="Trade Information">
+                    <field name="is_from_purchase_order" readonly="1" />
+                    <field name="is_from_sale_order" readonly="1" />
+                </group>
+            </xpath>
         </field>
     </record>
 </odoo>

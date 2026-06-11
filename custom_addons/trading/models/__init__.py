@@ -4,3 +4,4 @@ from . import futures
 from . import purchare_order
 from . import stock
 from . import account_move_line
+from . import account_move
