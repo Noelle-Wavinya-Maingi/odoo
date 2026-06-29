@@ -220,6 +220,12 @@ class TradingTrade(models.Model):
         default = 0.0
     )
     
+    invoice_ids = fields.One2many('account.move', 'trade_id', string='Invoices')
+    
+    invoice_count = fields.Integer(string='Invoice Count', compute='_compute_invoice_count')
+    
+    bill_count = fields.Integer(string='Bill Count', compute='_compute_invoice_count')
+    
     @api.depends('quantity', 'total_sold_quantity', 'purchase_id', 'sale_order_ids', 'sale_order_ids.state')
     def _compute_position(self):
         """Calculate open position and check if fully matched."""
@@ -275,14 +281,7 @@ class TradingTrade(models.Model):
                 _logger.info(f" 🔄 Matched Qty: {matched_qty}")
                 _logger.info(f"  💸Cost Basis: {cost_basis}")
             
-                # For long trades, profit = sales revenue - cost basis
-                # For short trades, profit = cost basis - sales revenue
-                if record.trade_type == 'long':
-                    # Use the computed total_sales_value (which is already the sum of all sales)
-                    record.realized_pnl = record.total_sales_value - cost_basis
-                else:  # short
-                    record.realized_pnl = cost_basis - record.total_sales_value
-            
+                record.realized_pnl = record.total_sales_value - cost_basis
                 # Add additional revenue (this is EXTRA income not related to product sales)
                 if record.additional_revenue != 0:
                     old_pnl = record.realized_pnl
@@ -418,7 +417,21 @@ class TradingTrade(models.Model):
             record._compute_performance()
             record._compute_on_hand_quantity()
             record._compute_total_lot_quantity()
-
+            record._compute_invoice_count()
+    
+    @api.depends('invoice_ids', 'invoice_ids.move_type', 'invoice_ids.state')
+    def _compute_invoice_count(self):
+        for record in self:
+            moves = self.env['account.move'].search([('trade_id', '=', record.id)])
+            for m in moves:
+        
+            invoices = moves.filtered(lambda m: m.move_type in ['out_invoice', 'out_refund'])
+            bills = moves.filtered(lambda m: m.move_type in ['in_invoice', 'in_refund'])
+        
+        
+            record.invoice_count = len(invoices)
+            record.bill_count = len(bills)
+        
     def action_view_purchase(self):
         self.ensure_one()
         if not self.purchase_id:
@@ -457,6 +470,28 @@ class TradingTrade(models.Model):
         else:
             action['domain'] = [('id', 'in', self.sale_order_ids.ids)]
         return action
+    
+    def action_view_invoices(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Invoices',
+            'res_model': 'account.move',
+            'view_mode': 'list,form',
+            'domain': [('trade_id', '=', self.id), ('move_type', 'in', ['out_invoice', 'out_refund'])],
+            'context': {'default_trade_id': self.id, 'default_move_type': 'out_invoice'},
+        }
+        
+    def action_view_bills(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Bills',
+            'res_model': 'account.move',
+            'view_mode': 'list,form',
+            'domain': [('trade_id', '=', self.id), ('move_type', 'in', ['in_invoice', 'in_refund'])],
+            'context': {'default_trade_id': self.id, 'default_move_type': 'in_invoice'},
+        }
     
     @api.model_create_multi
     def create(self, vals_list):

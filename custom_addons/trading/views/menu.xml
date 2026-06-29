@@ -12,11 +12,11 @@
         <field name="res_model">trading.trade</field>
         <field name="view_mode">list,form,pivot</field>
     </record>
-    <record id="action_trading_futures" model="ir.actions.act_window">
+    <!-- <record id="action_trading_futures" model="ir.actions.act_window">
         <field name="name">Futures</field>
         <field name="res_model">trading.futures</field>
         <field name="view_mode">list,form</field>
-    </record>
+    </record> -->
 
     <!-- Root Menu -->
     <menuitem id="menu_trading_root" name="Trading" action="action_trading_root" sequence="10" />
@@ -25,6 +25,6 @@
      <menuitem id="menu_trading_trades" name="Trades" parent="menu_trading_root" action="action_trading_trades" />
 
      <!-- Futures -->
-      <menuitem id="menu_trading_futures" name="Futures" parent="menu_trading_root" action="action_trading_futures" />
+      <!-- <menuitem id="menu_trading_futures" name="Futures" parent="menu_trading_root" action="action_trading_futures" /> -->
     
 </odoo>

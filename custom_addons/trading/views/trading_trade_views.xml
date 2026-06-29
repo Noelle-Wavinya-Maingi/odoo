@@ -40,17 +40,32 @@
                         invisible="not sale_order_ids">
                         <field name="sale_count" widget="statinfo" string="Sales"/>
                     </button>
+                    <button name="action_view_invoices"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-pencil-square-o"
+                        invisible="invoice_count == 0">
+                        <field name="invoice_count" widget="statinfo" string="Customer Invoices" />
+                    </button>
+                    <button name="action_view_bills"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-pencil-square-o"
+                        invisible="bill_count == 0">
+                        <field name="bill_count" widget="statinfo" string="Vendor Bills" />
+                    </button>
                 </div>
                 <h1>
                     <field name="name" nolabel="1" default_focus="1" />
                 </h1>
                 <group col="2">
-                    <group>
+                    <group string="Trade Details">
                         <field name="trade_type" readonly="status in ['confirmed', 'closed']" />
                         <field name="lot_ids" readonly="status in ['confirmed', 'closed']" widget="many2many_tags" />
                         <field name="sale_order_ids" widget="many2many_tags" options="{'no_create': True}" readonly="1" invisible="1" />
+                        <field name="invoice_ids" widget="many2many_tags" options="{'no_create': True}" readonly="1" invisible="1" />
                     </group>
-                    <group>
+                    <group string="Trade Metrics &amp; Financials" class="o_bg_light rounded">
                         <field name="product_id" />
                         <label for="quantity" string="Quantity" />
                         <div class="o_row g-0 d-flex"> 
@@ -74,7 +89,8 @@
                 <field name="is_fully_matched" invisible="1" />
 
                 <!-- Summary Cards -->
-                <div class="row mt-4">
+                <separator string="Trade Summary" />
+                <div class="row mt-4" string="Trade Summary">
 
                     <!-- Open Positions Card -->
                     <div class="col-12 col-lg-4">
@@ -177,9 +193,9 @@
                 </div>
 
                 <notebook>
-                    <page string="Future Positions">
+                    <!-- <page string="Future Positions"> -->
                         <!-- futures_ids to be added -->
-                    </page>
+                    <!-- </page> -->
                 </notebook>
             </sheet>
             <chatter />

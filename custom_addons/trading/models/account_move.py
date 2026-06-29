@@ -58,10 +58,11 @@ class AccountMove(models.Model):
         # Process each record that has a trade_id (header level)
         for record in records:
             if record.trade_id:
+                record.trade_id._compute_invoice_count()
                 if not record.is_from_purchase_order and not record.is_from_sale_order:
+                    _logger.info(f"📊 Processing direct trade addition from invoice header")
                     record._update_trade_pnl_from_invoice()
                 elif record.is_from_purchase_order:
-                    record._update_trade_additional_costs()
             else:
                 # Check if any invoice lines have trade_id
                 record._process_line_level_trades()
@@ -72,19 +73,59 @@ class AccountMove(models.Model):
         """Override write to handle trade P&L updates when modifying invoices/bills"""
     
         # Check if we're moving to posted state
+
+        # ── Sync header trade_id from line writes ─────────────────────────
+        if 'invoice_line_ids' in vals and 'trade_id' not in vals:
+            for command in vals['invoice_line_ids']:
+                if command[0] == 1 and isinstance(command[2], dict) and 'trade_id' in command[2]:
+                    new_trade_id = command[2]['trade_id']
+                    if new_trade_id:
+                        vals['trade_id'] = new_trade_id
+                    break
+
+        # Capture old trade IDs as integers BEFORE write
+        old_trade_ids = {}
+        if 'trade_id' in vals:
+            for move in self:
+                old_trade_ids[move.id] = move.trade_id.id
+
         is_moving_to_posted = 'state' in vals and vals['state'] == 'posted'
     
         result = super().write(vals)
-    
-        # Only process if we're moving to posted state and the invoice wasn't already posted
+
+        # If trade_id changed, recompute counts on both old and new trade
+        if 'trade_id' in vals:
+            new_trade_id = vals.get('trade_id')
+
+            for move in self:
+                old_id = old_trade_ids.get(move.id)
+
+                # Recompute on OLD trade to decrement its count
+                if old_id and old_id != new_trade_id:
+                    old_trade = self.env['trading.trade'].browse(old_id)
+                    old_trade._compute_invoice_count()
+
+                # Recompute on NEW trade to increment its count
+                if new_trade_id:
+                    new_trade = self.env['trading.trade'].browse(new_trade_id)
+                    new_trade._compute_invoice_count()
+
+                    # If invoice is already posted, reprocess P&L for the new trade
+                    if move.state == 'posted':
+                        if not move.is_from_purchase_order and not move.is_from_sale_order:
+                            move._update_trade_pnl_from_invoice()
+                        elif move.is_from_sale_order:
+                            move._update_trade_pnl_from_sale_order()
+                        elif move.is_from_purchase_order:
+                            move._update_trade_additional_costs()
+
         if is_moving_to_posted:
             for record in self:
                 # Only process if the invoice wasn't already posted before
                 if not record.posted_before:
+                    has_trade = record.trade_id or any(line.trade_id for line in record.invoice_line_ids)
 
                     # Check if invoice has trade_id on header or lines
-                    has_trade = record.trade_id or any(line.trade_id for line in record.invoice_line_ids)
-                
                     if has_trade:
                         if record.trade_id and not record.is_from_purchase_order and not record.is_from_sale_order:
                             record._update_trade_pnl_from_invoice()
@@ -106,9 +147,10 @@ class AccountMove(models.Model):
                 if sale_order and sale_order.trade_id:
                     # Ensure the invoice has the trade
                     if not move.trade_id:
+                        # Ensure invoice lines have the product's trade information
                         move.trade_id = sale_order.trade_id.id
-                    
-                    # Ensure invoice lines have the product's trade information
+                        move.trade_id._compute_invoice_count()
+
                     for invoice_line in move.invoice_line_ids:
                         if invoice_line.product_id and not invoice_line.trade_id:
                             # Check if the sale order line had trade information
@@ -119,16 +161,33 @@ class AccountMove(models.Model):
                                 invoice_line.trade_id = sale_order_line.trade_id.id
                             elif sale_order.trade_id:
                                 invoice_line.trade_id = sale_order.trade_id.id
-        
-        # Update all invoices/bills that have trade_id (header or line level)
+
+            # Update all invoices/bills that have trade_id (header or line level)
+            if move.is_from_purchase_order and move.invoice_origin:
+                purchase_order = self.env['purchase.order'].search([('name', '=', move.invoice_origin)], limit=1)
+                if purchase_order and purchase_order.trade_id:
+                    if not move.trade_id:
+                        move.trade_id = purchase_order.trade_id.id
+                        move.trade_id._compute_invoice_count()
+
+                    for invoice_line in move.invoice_line_ids:
+                        if invoice_line.product_id and not invoice_line.trade_id:
+                            purchase_order_line = purchase_order.order_line.filtered(
+                                lambda l: l.product_id == invoice_line.product_id
+                            )
+                            if purchase_order_line and purchase_order_line.trade_id:
+                                invoice_line.trade_id = purchase_order_line.trade_id.id
+                            elif purchase_order.trade_id:
+                                invoice_line.trade_id = purchase_order.trade_id.id
+
         for move in self:
             
             # Check header level trade
             if move.trade_id:
+                move.trade_id._compute_invoice_count()
                 if not move.is_from_purchase_order and not move.is_from_sale_order:
                     move._update_trade_pnl_from_invoice()
-                elif move.is_from_purchase_order:
-                    move._update_trade_additional_costs()
+                elif move.is_from_purchase_order and move.trade_id:
                 elif move.is_from_sale_order and move.trade_id:
                     move._update_trade_pnl_from_sale_order()
             else:
@@ -140,31 +199,25 @@ class AccountMove(models.Model):
     def _update_trade_additional_costs(self):
         """Update trade with additional costs from vendor bills (transportation, fees, etc.)"""
         self.ensure_one()
-        
-        if not self.trade_id or not self.is_from_purchase_order:
+
+        if not self.trade_id:
             return
-        
+
+        if self.state != 'posted':
+            return
+
         trade = self.trade_id
-        
-        if self.state == 'posted':
-            
-            # Calculate total additional costs from all bill lines
-            total_additional_cost = 0.0
-            
-            for line in self.invoice_line_ids:
-                line_total = line.price_unit * line.quantity
-                total_additional_cost += line_total
-            
-            if total_additional_cost > 0:
-                old_costs = trade.additional_costs
-                trade.write({
-                    'additional_costs': trade.additional_costs + total_additional_cost
-                })
-                
-                
-                # Recalculate trade P&L with new costs
-                trade._compute_all_trade_fields()
-    
+
+        total_additional_cost = 0.0
+        for line in self.invoice_line_ids:
+            line_total = line.price_unit * line.quantity
+            total_additional_cost += line_total
+
+        if total_additional_cost > 0:
+            old_costs = trade.additional_costs
+            trade.write({'additional_costs': trade.additional_costs + total_additional_cost})
+            trade._compute_all_trade_fields()
+
     def _update_trade_pnl_from_invoice(self):
         """Update trade P&L based on invoice/bill (direct trades only)"""
         self.ensure_one()
@@ -193,6 +246,7 @@ class AccountMove(models.Model):
                         total_quantity += line.quantity
                         total_amount += line.price_unit * line.quantity
                     else:
+                        line_total = line.price_unit * line.quantity
                         if line_total > 0:
                             total_additional_cost += line_total
             
@@ -226,41 +280,18 @@ class AccountMove(models.Model):
         elif is_invoice and not self.is_from_sale_order:
             # This is a direct sale not from a sale order
             if self.state == 'posted':
-                
-                total_quantity = 0.0
                 total_amount = 0.0
-            
                 for line in self.invoice_line_ids:
                     if line.product_id == trade.product_id:
-                        total_quantity += line.quantity
                         total_amount += line.price_unit * line.quantity
+                    else:
+                        line_total = line.price_unit * line.quantity
+                        if line_total > 0:
+                            total_amount += line_total
 
-                if total_quantity > 0:
-                    avg_price = total_amount / total_quantity
-                
-                    # Create a minimal sale order for tracking
-                    sale_order = self.env['sale.order'].create({
-                        'partner_id': self.partner_id.id,
-                        'company_id': self.company_id.id,
-                        'state': 'sale',
-                        'origin': f"Invoice {self.name}",
-                        'client_order_ref': self.invoice_payment_ref or self.name,
-                        'trade_id': trade.id,
-                    })
-
-                    self.env['sale.order.line'].create({
-                        'order_id': sale_order.id,
-                        'product_id': trade.product_id.id,
-                        'product_uom_qty': total_quantity,
-                        'price_unit': avg_price,
-                        'name': f"Direct invoice sale for trade {trade.name} - Invoice {self.name}",
-                        'trade_id': trade.id,
-                    })
-
-                    trade.write({
-                        'sale_order_ids': [(4, sale_order.id)]
-                    })
-                
+                if total_amount > 0:
+                    old_revenue = trade.additional_revenue
+                    trade.write({'additional_revenue': trade.additional_revenue + total_amount})
                     trade._compute_all_trade_fields()
     
         # After updating, check if trade should be auto-closed
@@ -309,8 +340,17 @@ class AccountMove(models.Model):
         # Skip if invoice is not posted
         if self.state != 'posted':
             return
-    
-        # Check if we already processed this invoice by looking at a field
+
+        # Propagate trade_id to header from lines if not already set
+        if not self.trade_id:
+            line_trades = self.invoice_line_ids.mapped('trade_id')
+            if len(line_trades) == 1:
+                self.trade_id = line_trades.id
+                self.trade_id._compute_invoice_count()
+            elif len(line_trades) > 1:
+                self.trade_id = line_trades[0].id
+                self.trade_id._compute_invoice_count()
+
         if self.trade_id and self.trade_id.additional_revenue > 0:
             # Check if this specific invoice was already processed
             return
