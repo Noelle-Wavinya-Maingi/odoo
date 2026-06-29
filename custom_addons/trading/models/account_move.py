@@ -60,12 +60,10 @@ class AccountMove(models.Model):
             if record.trade_id:
                 record.trade_id._compute_invoice_count()
                 if not record.is_from_purchase_order and not record.is_from_sale_order:
-                    _logger.info(f"📊 Processing direct trade addition from invoice header")
                     record._update_trade_pnl_from_invoice()
-                elif record.is_from_purchase_order:
-            else:
-                # Check if any invoice lines have trade_id
-                record._process_line_level_trades()
+                else:
+                    # Check if any invoice lines have trade_id
+                    record._process_line_level_trades()
         
         return records
     
@@ -187,7 +185,6 @@ class AccountMove(models.Model):
                 move.trade_id._compute_invoice_count()
                 if not move.is_from_purchase_order and not move.is_from_sale_order:
                     move._update_trade_pnl_from_invoice()
-                elif move.is_from_purchase_order and move.trade_id:
                 elif move.is_from_sale_order and move.trade_id:
                     move._update_trade_pnl_from_sale_order()
             else:

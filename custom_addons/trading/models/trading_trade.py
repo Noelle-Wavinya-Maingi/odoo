@@ -423,7 +423,6 @@ class TradingTrade(models.Model):
     def _compute_invoice_count(self):
         for record in self:
             moves = self.env['account.move'].search([('trade_id', '=', record.id)])
-            for m in moves:
         
             invoices = moves.filtered(lambda m: m.move_type in ['out_invoice', 'out_refund'])
             bills = moves.filtered(lambda m: m.move_type in ['in_invoice', 'in_refund'])
