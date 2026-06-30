@@ -259,7 +259,7 @@ class TradingTrade(models.Model):
             record.is_fully_matched = has_purchase and has_sale and quantities_match
         
 
-    @api.depends('total_sales_value', 'total_sales_cost_basis', 'open_position_quantity', 'current_price', 'trade_type', 'quantity', 'total_sold_quantity', 'additional_costs', 'additional_revenue')
+    @api.depends('total_sales_value', 'total_sales_cost_basis', 'open_position_quantity', 'current_price', 'trade_type', 'quantity', 'total_sold_quantity','additional_costs', 'additional_revenue')
     def _compute_pnl(self):
         """Calculate P&L - Realized when both sides exist, Unrealized for open position"""
         for record in self:
@@ -277,49 +277,66 @@ class TradingTrade(models.Model):
             # REALIZED P&L: Only when BOTH purchase AND sale exist
             if has_purchase_doc and has_sale_docs:
                 matched_qty = min(record.quantity, record.total_sold_quantity)
-                cost_basis = matched_qty * avg_cost_per_unit
-                _logger.info(f" 🔄 Matched Qty: {matched_qty}")
-                _logger.info(f"  💸Cost Basis: {cost_basis}")
-            
-                record.realized_pnl = record.total_sales_value - cost_basis
-                # Add additional revenue (this is EXTRA income not related to product sales)
-                if record.additional_revenue != 0:
-                    old_pnl = record.realized_pnl
-                    record.realized_pnl += record.additional_revenue
-            
+
+                if record.trade_type == 'long':
+                    realized_value = 0.0
+                    for order in record.sale_order_ids.filtered(lambda so: so.state in ['sale', 'done']):
+                        for line in order.order_line:
+                            if line.product_id == record.product_id:
+                                realized_value += line.price_unit * line.product_uom_qty
+                    # Use avg_cost_per_unit so additional costs are included
+                    record.realized_pnl = realized_value - (matched_qty * avg_cost_per_unit)
+                else:
+                    # Short: sales value minus cost basis (including additional costs)
+                    record.realized_pnl = record.total_sales_value - (matched_qty * avg_cost_per_unit)
             else:
                 record.realized_pnl = 0.0
             # UNREALIZED P&L: Calculate based on open position
-            if record.open_position_quantity != 0 and record.current_price > 0:
+            if record.open_position_quantity != 0:
                 open_qty = abs(record.open_position_quantity)
 
                 if record.open_position_quantity > 0:
                     # LONG position (own more than sold)
-                    if avg_cost_per_unit > 0:
+                    if avg_cost_per_unit > 0 and record.current_price > 0:
+                        # Market price set — proper unrealized P&L vs total cost basis
                         record.unrealized_pnl = open_qty * (record.current_price - avg_cost_per_unit)
+                    elif avg_cost_per_unit > 0:
+                        # No market price — show negative of total cost (money spent)
+                        record.unrealized_pnl = -(open_qty * avg_cost_per_unit)
                     else:
                         record.unrealized_pnl = 0.0
                 else:
                     # SHORT position (sold more than owned)
                     # Use sales_price if available, otherwise average_sale_price
                     sale_price_to_use = record.sales_price if record.sales_price > 0 else record.average_sale_price
-                    if sale_price_to_use > 0:
+                    if sale_price_to_use > 0 and record.current_price > 0:
                         record.unrealized_pnl = open_qty * (sale_price_to_use - record.current_price)
                         _logger.info(f"   SHORT Unrealized P&L: {open_qty} * ({sale_price_to_use} - {record.current_price}) = {record.unrealized_pnl}")
+                    elif sale_price_to_use > 0:
+                        # No market price — show positive of sale value received
+                        record.unrealized_pnl = open_qty * sale_price_to_use
                     else:
                         record.unrealized_pnl = 0.0
             else:
                 record.unrealized_pnl = 0.0
 
             # TOTAL P&L
-            record.total_pnl = record.realized_pnl + record.unrealized_pnl
-        
+            record.total_pnl = (record.realized_pnl + record.unrealized_pnl + record.additional_revenue)
             # P&L PERCENTAGE
-            total_cost = (record.quantity * record.price) + record.additional_costs
-            if total_cost > 0:
-                record.pnl_percentage = (record.total_pnl / total_cost) * 100
-            elif record.total_sales_value > 0:
-                record.pnl_percentage = (record.total_pnl / record.total_sales_value) * 100
+            if record.trade_type == 'long':
+                # Long: return on total cost (including additional costs)
+                total_cost_base = (record.quantity * record.price) + record.additional_costs
+                if total_cost_base > 0:
+                    record.pnl_percentage = (record.total_pnl / total_cost_base) * 100
+                else:
+                    record.pnl_percentage = 0.0
+            elif record.trade_type == 'short':
+                # Short: gross margin on total revenue (including additional revenue)
+                total_revenue_base = record.total_sales_value + record.additional_revenue
+                if total_revenue_base > 0:
+                    record.pnl_percentage = (record.total_pnl / total_revenue_base) * 100
+                else:
+                    record.pnl_percentage = 0.0
             else:
                 record.pnl_percentage = 0.0
         

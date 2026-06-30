@@ -19,6 +19,12 @@
         'base', 'mail', 'account'
 
     ],
+    'assets': {
+        'web.assets_backend': [
+            'operations/static/src/js/settings_patch.js',
+            'operations/static/src/css/settings.css',
+        ],
+    },
 
     # Data files loaded at installation
     'data': [

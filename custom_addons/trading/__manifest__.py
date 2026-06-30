@@ -17,7 +17,7 @@
 
     # Dependencies
     'depends': [
-        'base', 'stock', 'sale'
+        'base', 'stock', 'sale', 'purchase'
     ],
 
     # Data files loaded at installation
@@ -32,7 +32,6 @@
         'views/purchase_order.xml',
         'views/stock_views.xml',
         'views/sale_view.xml',
-        'views/purchase_order.xml',
         'views/account_move_line_view.xml',
     ],
 

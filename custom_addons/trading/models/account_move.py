@@ -8,7 +8,8 @@ class AccountMove(models.Model):
     trade_id = fields.Many2one('trading.trade', string='Trade', help='Related trade for this move')
     is_from_purchase_order = fields.Boolean(string="From Purchase Order", compute='_compute_is_from_order', store=True)
     is_from_sale_order = fields.Boolean(string="From Sale Order", compute='_compute_is_from_order', store=True)
-    
+    trade_pnl_processed = fields.Boolean(string='Trade P&L Processed', default=False, copy=False, help='Whether this invoice has been processed for trade P&L')
+
     @api.depends('purchase_id', 'invoice_origin')
     def _compute_is_from_order(self):
         """Determine if the invoice is from a purchase order or sale order"""
@@ -61,16 +62,14 @@ class AccountMove(models.Model):
                 record.trade_id._compute_invoice_count()
                 if not record.is_from_purchase_order and not record.is_from_sale_order:
                     record._update_trade_pnl_from_invoice()
-                else:
-                    # Check if any invoice lines have trade_id
-                    record._process_line_level_trades()
-        
+            else:
+                # Check if any invoice lines have trade_id
+                record._process_line_level_trades()
+
         return records
     
     def write(self, vals):
         """Override write to handle trade P&L updates when modifying invoices/bills"""
-    
-        # Check if we're moving to posted state
 
         # ── Sync header trade_id from line writes ─────────────────────────
         if 'invoice_line_ids' in vals and 'trade_id' not in vals:
@@ -90,6 +89,9 @@ class AccountMove(models.Model):
         is_moving_to_posted = 'state' in vals and vals['state'] == 'posted'
     
         result = super().write(vals)
+
+        # Track which moves were processed in THIS write call
+        processed_in_this_call = set()
 
         # If trade_id changed, recompute counts on both old and new trade
         if 'trade_id' in vals:
@@ -116,17 +118,29 @@ class AccountMove(models.Model):
                             move._update_trade_pnl_from_sale_order()
                         elif move.is_from_purchase_order:
                             move._update_trade_additional_costs()
+                        processed_in_this_call.add(move.id)
 
         if is_moving_to_posted:
             for record in self:
-                # Only process if the invoice wasn't already posted before
-                if not record.posted_before:
-                    has_trade = record.trade_id or any(line.trade_id for line in record.invoice_line_ids)
+                # Re-read from DB to catch updates made earlier in this request
+                record.invalidate_recordset(['trade_pnl_processed'])
 
+
+                if record.id in processed_in_this_call:
+                    continue
+
+                if not record.trade_pnl_processed:
+                    has_trade = record.trade_id or any(line.trade_id for line in record.invoice_line_ids)
                     # Check if invoice has trade_id on header or lines
                     if has_trade:
                         if record.trade_id and not record.is_from_purchase_order and not record.is_from_sale_order:
                             record._update_trade_pnl_from_invoice()
+                        elif not record.trade_id:
+                            # No header trade — propagate from lines first.
+                            line_trades = record.invoice_line_ids.mapped('trade_id')
+                            if len(line_trades) >= 1:
+                                record.trade_id = line_trades[0].id
+                                record.trade_id._compute_invoice_count()
                         else:
                             # Check line level trades
                             record._process_line_level_trades()
@@ -185,6 +199,8 @@ class AccountMove(models.Model):
                 move.trade_id._compute_invoice_count()
                 if not move.is_from_purchase_order and not move.is_from_sale_order:
                     move._update_trade_pnl_from_invoice()
+                elif move.is_from_purchase_order and move.trade_id:
+                    move._update_trade_additional_costs()
                 elif move.is_from_sale_order and move.trade_id:
                     move._update_trade_pnl_from_sale_order()
             else:
@@ -192,7 +208,42 @@ class AccountMove(models.Model):
                 move._process_line_level_trades()
         
         return result
-    
+
+    def button_draft(self):
+        """Override to reverse trade P&L when invoice is reset to draft"""
+        for move in self:
+            if move.trade_pnl_processed and move.trade_id:
+                trade = move.trade_id
+
+                if move.move_type in ['out_invoice', 'out_refund'] and not move.is_from_sale_order:
+                    total_amount = sum(
+                        line.price_unit * line.quantity
+                        for line in move.invoice_line_ids
+                    )
+                    if total_amount > 0:
+                        old_revenue = trade.additional_revenue
+                        trade.write({
+                            'additional_revenue': max(trade.additional_revenue - total_amount, 0)
+                        })
+                        trade._compute_all_trade_fields()
+
+                elif move.move_type in ['in_invoice', 'in_refund']:
+                    total_costs = sum(
+                        line.price_unit * line.quantity
+                        for line in move.invoice_line_ids
+                        if line.product_id != trade.product_id
+                    )
+                    if total_costs > 0:
+                        old_costs = trade.additional_costs
+                        trade.write({
+                            'additional_costs': max(trade.additional_costs - total_costs, 0)
+                        })
+                        trade._compute_all_trade_fields()
+
+                move.trade_pnl_processed = False
+
+        return super().button_draft()
+
     def _update_trade_additional_costs(self):
         """Update trade with additional costs from vendor bills (transportation, fees, etc.)"""
         self.ensure_one()
@@ -201,6 +252,9 @@ class AccountMove(models.Model):
             return
 
         if self.state != 'posted':
+            return
+
+        if self.trade_pnl_processed:
             return
 
         trade = self.trade_id
@@ -214,6 +268,7 @@ class AccountMove(models.Model):
             old_costs = trade.additional_costs
             trade.write({'additional_costs': trade.additional_costs + total_additional_cost})
             trade._compute_all_trade_fields()
+            self.trade_pnl_processed = True
 
     def _update_trade_pnl_from_invoice(self):
         """Update trade P&L based on invoice/bill (direct trades only)"""
@@ -221,7 +276,10 @@ class AccountMove(models.Model):
     
         if not self.trade_id:
             return
-    
+
+        if self.trade_pnl_processed:
+            return
+
         trade = self.trade_id
     
         # Determine if it's a bill (vendor bill) or invoice (customer invoice)
@@ -271,9 +329,11 @@ class AccountMove(models.Model):
                         })
                 
                     trade._compute_all_trade_fields()
+                    self.trade_pnl_processed = True
                 elif total_additional_cost > 0:
                     trade._compute_all_trade_fields()
-                
+                    self.trade_pnl_processed = True
+
         elif is_invoice and not self.is_from_sale_order:
             # This is a direct sale not from a sale order
             if self.state == 'posted':
@@ -290,7 +350,7 @@ class AccountMove(models.Model):
                     old_revenue = trade.additional_revenue
                     trade.write({'additional_revenue': trade.additional_revenue + total_amount})
                     trade._compute_all_trade_fields()
-    
+                    self.trade_pnl_processed = True
         # After updating, check if trade should be auto-closed
         if trade.is_fully_matched and trade.status == 'confirmed':
             trade.status = 'closed'
@@ -301,7 +361,10 @@ class AccountMove(models.Model):
         
         if not self.trade_id or not self.is_from_sale_order:
             return
-        
+
+        if self.trade_pnl_processed:
+            return
+
         trade = self.trade_id
         
         if self.state == 'posted':
@@ -329,7 +392,9 @@ class AccountMove(models.Model):
                             sale_order.trade_id = trade.id
             
             trade._compute_all_trade_fields()
-            
+
+            self.trade_pnl_processed = True
+
     def _process_line_level_trades(self):
         """Process trades from invoice lines instead of invoice header"""
         self.ensure_one()
@@ -337,19 +402,8 @@ class AccountMove(models.Model):
         # Skip if invoice is not posted
         if self.state != 'posted':
             return
-
-        # Propagate trade_id to header from lines if not already set
-        if not self.trade_id:
-            line_trades = self.invoice_line_ids.mapped('trade_id')
-            if len(line_trades) == 1:
-                self.trade_id = line_trades.id
-                self.trade_id._compute_invoice_count()
-            elif len(line_trades) > 1:
-                self.trade_id = line_trades[0].id
-                self.trade_id._compute_invoice_count()
-
-        if self.trade_id and self.trade_id.additional_revenue > 0:
-            # Check if this specific invoice was already processed
+        # Check if this specific invoice was already processed
+        if self.trade_pnl_processed:
             return
     
         # Group invoice lines by trade
@@ -406,6 +460,9 @@ class AccountMove(models.Model):
                     trade._compute_all_trade_fields()
     
         # Check if any trade should be auto-closed
+        if trades_to_update:
+            self.trade_pnl_processed = True
+
         for trade_data in trades_to_update.values():
             trade = trade_data['trade']
             if trade.is_fully_matched and trade.status == 'confirmed':
