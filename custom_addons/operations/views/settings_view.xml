@@ -36,7 +36,7 @@
                         </group>
                         
                         <group string="Industry-specific Settings" invisible="not company_industry">
-                            <field name="shipping_type" invisible="company_industry != 'shipping'" required="company_industry == 'shipping'"/>
+                            <field name="shipping_type" invisible="company_industry != 'shipping'" required="company_industry == 'shipping'" readonly="industry_locked"/>
                             <field name="trading_type" invisible="company_industry != 'trading'" readonly="industry_locked"/>
                         </group>
                     </group>

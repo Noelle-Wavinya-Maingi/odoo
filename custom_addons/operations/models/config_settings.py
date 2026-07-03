@@ -12,14 +12,7 @@ class ResConfigSettings(models.TransientModel):
     company_industry = fields.Selection([
         ('shipping', 'Shipping & Logistics'),
         ('trading', 'Trading & Distribution'),
-        ('manufacturing', 'Manufacturing'),
-        ('construction', 'Construction'),
-        ('services', 'Services'),
-        ('retail', 'Retail'),
-        ('healthcare', 'Healthcare'),
-        ('agriculture', 'Agriculture'),
-        ('mining', 'Mining'),
-        ('energy', 'Energy'),
+        ('manufacturing', 'Manufacturing')
     ], string='Company Industry', 
        default='trading',
        config_parameter='operations.company_industry',
@@ -185,23 +178,31 @@ class ResConfigSettings(models.TransientModel):
     def execute(self):
         """Override execute to handle module installation"""
         # Get the current values before saving
+        params = self.env['ir.config_parameter'].sudo()
         current_shipping = self.install_shipping
         current_trading = self.install_trading
         current_manufacturing = self.install_manufacturing
-        
-        # Call super to save settings
+
+        # Read what was previously installed via these checkboxes
+        was_shipping_installed = params.get_param('operations.shipping_module_installed', False)
+        was_trading_installed = params.get_param('operations.trading_module_installed', False)
+        was_manufacturing_installed = params.get_param('operations.manufacturing_module_installed', False)
+
         result = super().execute()
         
         # Now install modules if needed
         modules_to_install = []
-        
-        if current_shipping:
-            modules_to_install.append('operations_shipping')
-        if current_trading:
+
+        if current_shipping and not was_shipping_installed:
+            modules_to_install.append('quotation')
+            params.set_param('operations.shipping_module_installed', True)
+        if current_trading and not was_trading_installed:
             modules_to_install.append('trading')
-        if current_manufacturing:
+            params.set_param('operations.trading_module_installed', True)
+        if current_manufacturing and not was_manufacturing_installed:
             modules_to_install.append('mrp')
-        
+            params.set_param('operations.manufacturing_module_installed', True)
+
         if modules_to_install:
             self._install_modules(modules_to_install)
         
@@ -211,6 +212,11 @@ class ResConfigSettings(models.TransientModel):
         """Save settings with validation"""
         super().set_values()
         
+        if not self.company_industry:
+            return
+        
+        params = self.env['ir.config_parameter'].sudo()
+        previous_industry = params.get_param('operations.active_industry', False)
         # Validate industry-specific requirements
         if self.company_industry == 'shipping' and not self.shipping_type:
             raise UserError(_("Please select a shipping type for shipping industry"))
@@ -222,7 +228,8 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('operations.industry_locked', True)
         
         # Trigger industry setup
-        self._setup_industry_environment()
+        if previous_industry != self.company_industry:
+            self._setup_industry_environment()
 
     @api.model
     def get_values(self):
