@@ -86,7 +86,7 @@ class SaleOrder(models.Model):
                 'trade_type': trade_type,
                 'quantity': total_qty,
                 'sales_price': avg_price,
-                'currency_id': order.currency_id.id,
+                'sale_currency_id': order.currency_id.id,
                 'status': 'confirmed',
                 'product_id': product.id if product else False,
                 'sale_order_ids': [(4, order.id)],

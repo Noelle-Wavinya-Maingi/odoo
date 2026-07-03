@@ -80,6 +80,8 @@
                     </group>
                     <group string="Pricing Details">
                         <field name="currency_id" invisible="status != 'draft'" />
+                        <field name="purchase_currency_id" invisible="status != 'draft'" />
+                        <field name="sale_currency_id" invisible="status != 'draft'" />
                         <field name="price" readonly="status != 'draft'" />
                         <field name="sales_price" readonly="status != 'draft'" />
                         <field name="current_price" />
@@ -90,114 +92,111 @@
                 <field name="currency_id" invisible="1" />
                 <field name="is_fully_matched" invisible="1" />
 
-                <!-- Summary Cards -->
-                <separator string="Trade Summary" />
-                <div class="row mt-4" string="Trade Summary">
-
-                    <!-- Open Positions Card -->
-                    <div class="col-12 col-lg-4">
-                        <div class="card" style="border-left: 4px solid #0d6efd;">
-                            <div class="card-header" style="background-color: #e7f1ff;">
-                                <h5 class="mb-0"><i class="fa fa-chart-line me-1"/> Open Positions</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row g-2">
-                                    <div class="col-6 text-center">
-                                        <strong style="display:block; font-size:11px; color:#6c757d;">Open Qty</strong>
-                                        <field name="open_position_quantity" readonly="1" nolabel="1" class="fw-bold"/>
-                                    </div>
-                                    <div class="col-6 text-center">
-                                        <strong style="display:block; font-size:11px; color:#6c757d;">Purchase Cost</strong>
-                                        <field name="total_purchase_cost" widget="monetary" readonly="1" nolabel="1" class="fw-bold"/>
-                                    </div>
-                                    <div class="col-6 text-center">
-                                        <strong style="display:block; font-size:11px; color:#6c757d;">Unrealized P&amp;L</strong>
-                                        <field name="unrealized_pnl" widget="monetary" readonly="1" nolabel="1"
-                                               class="fw-bold"
-                                               decoration-success="unrealized_pnl &gt; 0"
-                                               decoration-danger="unrealized_pnl &lt; 0"/>
-                                    </div>
-                                    <div class="col-6 text-center">
-                                        <strong style="display:block; font-size:11px; color:#6c757d;">Market Price</strong>
-                                        <field name="current_price" readonly="1" nolabel="1" class="fw-bold"/>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Closed Positions Card -->
-                    <div class="col-12 col-lg-4">
-                        <div class="card" style="border-left: 4px solid #198754;">
-                            <div class="card-header" style="background-color: #d1e7dd;">
-                                <h5 class="mb-0"><i class="fa fa-check-circle me-1"/> Closed Positions</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row g-2">
-                                    <div class="col-6 text-center">
-                                        <strong style="display:block; font-size:11px; color:#6c757d;">Sold Qty</strong>
-                                        <field name="total_sold_quantity" readonly="1" nolabel="1" class="fw-bold"/>
-                                    </div>
-                                    <div class="col-6 text-center">
-                                        <strong style="display:block; font-size:11px; color:#6c757d;">Sales Value</strong>
-                                        <field name="total_sales_value" widget="monetary" readonly="1" nolabel="1" class="fw-bold"/>
-                                    </div>
-                                    <div class="col-6 text-center">
-                                        <strong style="display:block; font-size:11px; color:#6c757d;">Realized P&amp;L</strong>
-                                        <field name="realized_pnl" widget="monetary" readonly="1" nolabel="1"
-                                               class="fw-bold"
-                                               decoration-success="realized_pnl &gt; 0"
-                                               decoration-danger="realized_pnl &lt; 0"/>
-                                    </div>
-                                    <div class="col-6 text-center">
-                                        <strong style="display:block; font-size:11px; color:#6c757d;">Cost Basis</strong>
-                                        <field name="total_sales_cost_basis" widget="monetary" readonly="1" nolabel="1" class="fw-bold"/>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Summary Card -->
-                    <div class="col-12 col-lg-4">
-                        <div class="card" style="border-left: 4px solid #ffc107;">
-                            <div class="card-header" style="background-color: #fff3cd;">
-                                <h5 class="mb-0"><i class="fa fa-calculator me-1"/> Summary</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row g-2">
-                                    <div class="col-6 text-center">
-                                        <strong style="display:block; font-size:11px; color:#6c757d;">Total P&amp;L</strong>
-                                        <field name="total_pnl" widget="monetary" readonly="1" nolabel="1"
-                                               class="fw-bold"
-                                               decoration-success="total_pnl &gt; 0"
-                                               decoration-danger="total_pnl &lt; 0"/>
-                                    </div>
-                                    <div class="col-6 text-center">
-                                        <strong style="display:block; font-size:11px; color:#6c757d;">P&amp;L %</strong>
-                                        <field name="pnl_percentage" readonly="1" nolabel="1"
-                                               class="fw-bold"
-                                               decoration-success="pnl_percentage &gt; 0"
-                                               decoration-danger="pnl_percentage &lt; 0"/>
-                                    </div>
-                                    <div class="col-6 text-center">
-                                        <strong style="display:block; font-size:11px; color:#6c757d;">Avg Sale Price</strong>
-                                        <field name="average_sale_price" widget="monetary" readonly="1" nolabel="1" class="fw-bold"/>
-                                    </div>
-                                    <div class="col-6 text-center">
-                                        <strong style="display:block; font-size:11px; color:#6c757d;">Fully Matched?</strong>
-                                        <field name="is_fully_matched" readonly="1" nolabel="1" widget="boolean_toggle" class="fw-bold"/>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <notebook>
-                    <!-- <page string="Future Positions"> -->
-                        <!-- futures_ids to be added -->
-                    <!-- </page> -->
+                     <page string="Trade Summary">
+                        <div class="row mt-4" string="Trade Summary">
+
+                            <!-- Open Positions Card -->
+                            <div class="col-12 col-lg-4">
+                                <div class="card" style="border-left: 4px solid #0d6efd;">
+                                    <div class="card-header" style="background-color: #e7f1ff;">
+                                        <h5 class="mb-0"><i class="fa fa-chart-line me-1"/> Open Positions</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-2">
+                                            <div class="col-6 text-center">
+                                                <strong style="display:block; font-size:11px; color:#6c757d;">Open Qty</strong>
+                                                <field name="open_position_quantity" readonly="1" nolabel="1" class="fw-bold"/>
+                                            </div>
+                                            <div class="col-6 text-center">
+                                                <strong style="display:block; font-size:11px; color:#6c757d;">Purchase Cost</strong>
+                                                <field name="total_purchase_cost" widget="monetary" readonly="1" nolabel="1" class="fw-bold"/>
+                                            </div>
+                                            <div class="col-6 text-center">
+                                                <strong style="display:block; font-size:11px; color:#6c757d;">Unrealized P&amp;L</strong>
+                                                <field name="unrealized_pnl" widget="monetary" readonly="1" nolabel="1"
+                                                       class="fw-bold"
+                                                       decoration-success="unrealized_pnl &gt; 0"
+                                                       decoration-danger="unrealized_pnl &lt; 0"/>
+                                            </div>
+                                            <div class="col-6 text-center">
+                                                <strong style="display:block; font-size:11px; color:#6c757d;">Market Price</strong>
+                                                <field name="current_price" readonly="1" nolabel="1" class="fw-bold"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Closed Positions Card -->
+                            <div class="col-12 col-lg-4">
+                                <div class="card" style="border-left: 4px solid #198754;">
+                                    <div class="card-header" style="background-color: #d1e7dd;">
+                                        <h5 class="mb-0"><i class="fa fa-check-circle me-1"/> Closed Positions</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-2">
+                                            <div class="col-6 text-center">
+                                                <strong style="display:block; font-size:11px; color:#6c757d;">Sold Qty</strong>
+                                                <field name="total_sold_quantity" readonly="1" nolabel="1" class="fw-bold"/>
+                                            </div>
+                                            <div class="col-6 text-center">
+                                                <strong style="display:block; font-size:11px; color:#6c757d;">Sales Value</strong>
+                                                <field name="total_sales_value" widget="monetary" readonly="1" nolabel="1" class="fw-bold"/>
+                                            </div>
+                                            <div class="col-6 text-center">
+                                                <strong style="display:block; font-size:11px; color:#6c757d;">Realized P&amp;L</strong>
+                                                <field name="realized_pnl" widget="monetary" readonly="1" nolabel="1"
+                                                       class="fw-bold"
+                                                       decoration-success="realized_pnl &gt; 0"
+                                                       decoration-danger="realized_pnl &lt; 0"/>
+                                            </div>
+                                            <div class="col-6 text-center">
+                                                <strong style="display:block; font-size:11px; color:#6c757d;">Cost Basis</strong>
+                                                <field name="total_sales_cost_basis" widget="monetary" readonly="1" nolabel="1" class="fw-bold"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Summary Card -->
+                            <div class="col-12 col-lg-4">
+                                <div class="card" style="border-left: 4px solid #ffc107;">
+                                    <div class="card-header" style="background-color: #fff3cd;">
+                                        <h5 class="mb-0"><i class="fa fa-calculator me-1"/> Summary</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-2">
+                                            <div class="col-6 text-center">
+                                                <strong style="display:block; font-size:11px; color:#6c757d;">Total P&amp;L</strong>
+                                                <field name="total_pnl" widget="monetary" readonly="1" nolabel="1"
+                                                       class="fw-bold"
+                                                       decoration-success="total_pnl &gt; 0"
+                                                       decoration-danger="total_pnl &lt; 0"/>
+                                            </div>
+                                            <div class="col-6 text-center">
+                                                <strong style="display:block; font-size:11px; color:#6c757d;">P&amp;L %</strong>
+                                                <field name="pnl_percentage" readonly="1" nolabel="1"
+                                                       class="fw-bold"
+                                                       decoration-success="pnl_percentage &gt; 0"
+                                                       decoration-danger="pnl_percentage &lt; 0"/>
+                                            </div>
+                                            <div class="col-6 text-center">
+                                                <strong style="display:block; font-size:11px; color:#6c757d;">Avg Sale Price</strong>
+                                                <field name="average_sale_price" widget="monetary" readonly="1" nolabel="1" class="fw-bold"/>
+                                            </div>
+                                            <div class="col-6 text-center">
+                                                <strong style="display:block; font-size:11px; color:#6c757d;">Fully Matched?</strong>
+                                                <field name="is_fully_matched" readonly="1" nolabel="1" widget="boolean_toggle" class="fw-bold"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                     </page>
+                    
                 </notebook>
             </sheet>
             <chatter />
@@ -206,22 +205,141 @@
 </record>
 
 <!-- Pivot View -->
-<record id="view_trading_trade_pivot" model="ir.ui.view">
-    <field name="name">trading.trade.pivot</field>
-    <field name="model">trading.trade</field>
-    <field name="arch" type="xml">
-        <pivot string="Trading Analysis">
-            <field name="product_id" type="row"/>
-            <field name="trade_type" type="row"/>
-            <field name="status" type="row"/>
-            <field name="purchase_id" type="row"/>
-            <field name="create_date" type="col" interval="month"/>
-            <field name="quantity" type="measure"/>
-            <field name="price" type="measure"/>
-            <field name="total_pnl" type="measure"/>
-            <field name="realized_pnl" type="measure"/>
-            <field name="unrealized_pnl" type="measure"/>
-        </pivot>
-    </field>
-</record>
+ <record id="view_trading_trade_graph" model="ir.ui.view">
+        <field name="name">trading.trade.graph</field>
+        <field name="model">trading.trade</field>
+        <field name="arch" type="xml">
+            <graph string="Trading Performance" type="bar" stacked="0">
+                <field name="product_id" type="row"/>
+                <field name="trade_type" type="col"/>
+                <field name="total_pnl" type="measure"/>
+                <field name="realized_pnl" type="measure"/>
+                <field name="unrealized_pnl" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ═══════════════════ ENHANCED PIVOT VIEW ═══════════════════ -->
+    <record id="view_trading_trade_pivot" model="ir.ui.view">
+        <field name="name">trading.trade.pivot</field>
+        <field name="model">trading.trade</field>
+        <field name="arch" type="xml">
+            <pivot string="Trading Analysis" display_quantity="true">
+                <field name="product_id" type="row"/>
+                <field name="trade_type" type="row"/>
+                <field name="status" type="row"/>
+                <field name="create_date" type="col" interval="month"/>
+                <field name="quantity" type="measure"/>
+                <field name="price" type="measure"/>
+                <field name="total_purchase_cost" type="measure"/>
+                <field name="total_sales_value" type="measure"/>
+                <field name="additional_costs" type="measure"/>
+                <field name="additional_revenue" type="measure"/>
+                <field name="realized_pnl" type="measure"/>
+                <field name="unrealized_pnl" type="measure"/>
+                <field name="total_pnl" type="measure"/>
+                <field name="pnl_percentage" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ═══════════════════ KANBAN VIEW (visual dashboard cards) ═══════════════════ -->
+    <record id="view_trading_trade_kanban" model="ir.ui.view">
+        <field name="name">trading.trade.kanban</field>
+        <field name="model">trading.trade</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="name"/>
+                <field name="trade_type"/>
+                <field name="status"/>
+                <field name="product_id"/>
+                <field name="total_pnl"/>
+                <field name="pnl_percentage"/>
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_card oe_kanban_global_click p-3"
+                             t-attf-style="border-left: 4px solid {{record.total_pnl.raw_value >= 0 ? '#198754' : '#dc3545'}};">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <strong><field name="name"/></strong>
+                                <span class="badge"
+                                      t-attf-class="badge {{record.trade_type.raw_value == 'long' ? 'bg-success' : 'bg-danger'}}">
+                                    <field name="trade_type"/>
+                                </span>
+                            </div>
+                            <div class="text-muted small mb-2">
+                                <field name="product_id"/>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <strong style="font-size: 11px; color: #6c757d; display:block;">Total P&amp;L</strong>
+                                    <field name="total_pnl" widget="monetary"
+                                           t-attf-class="fw-bold {{record.total_pnl.raw_value >= 0 ? 'text-success' : 'text-danger'}}"/>
+                                </div>
+                                <div class="text-end">
+                                    <strong style="font-size: 11px; color: #6c757d; display:block;">P&amp;L %</strong>
+                                    <field name="pnl_percentage"
+                                           t-attf-class="fw-bold {{record.pnl_percentage.raw_value >= 0 ? 'text-success' : 'text-danger'}}"/>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <span class="badge"
+                                      t-attf-class="badge {{record.status.raw_value == 'draft' ? 'bg-light text-dark' : record.status.raw_value == 'confirmed' ? 'bg-info' : 'bg-secondary'}}">
+                                    <field name="status"/>
+                                </span>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ═══════════════════ SEARCH VIEW (filters + group by for reporting) ═══════════════════ -->
+    <record id="view_trading_trade_search" model="ir.ui.view">
+        <field name="name">trading.trade.search</field>
+        <field name="model">trading.trade</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="trade_type"/>
+
+                <separator/>
+                <filter string="Long Trades" name="filter_long" domain="[('trade_type', '=', 'long')]"/>
+                <filter string="Short Trades" name="filter_short" domain="[('trade_type', '=', 'short')]"/>
+                <separator/>
+                <filter string="Draft" name="filter_draft" domain="[('status', '=', 'draft')]"/>
+                <filter string="Confirmed" name="filter_confirmed" domain="[('status', '=', 'confirmed')]"/>
+                <filter string="Closed" name="filter_closed" domain="[('status', '=', 'closed')]"/>
+                <separator/>
+                <filter string="Profitable" name="filter_profitable" domain="[('total_pnl', '&gt;', 0)]"/>
+                <filter string="Loss-making" name="filter_loss" domain="[('total_pnl', '&lt;', 0)]"/>
+                <separator/>
+                <filter string="Fully Matched" name="filter_matched" domain="[('is_fully_matched', '=', True)]"/>
+                <separator/>
+                <filter string="Product" name="groupby_product" context="{'group_by': 'product_id'}"/>
+                <filter string="Trade Type" name="groupby_trade_type" context="{'group_by': 'trade_type'}"/>
+                <filter string="Status" name="groupby_status" context="{'group_by': 'status'}"/>
+                <filter string="Creation Month" name="groupby_month" context="{'group_by': 'create_date:month'}"/>
+            </search>
+        </field>
+    </record>
+    <!-- ═══════════════════ REPORTING ACTION ═══════════════════ -->
+    <record id="action_trading_trade_reporting" model="ir.actions.act_window">
+        <field name="name">Trading Reporting</field>
+        <field name="res_model">trading.trade</field>
+        <field name="view_mode">graph,pivot,kanban,list</field>
+        <field name="search_view_id" ref="view_trading_trade_search"/>
+        <field name="context">{'search_default_filter_confirmed': 0}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No trades to report on yet
+            </p>
+            <p>
+                Once you create and confirm trades, you'll see performance analytics here.
+            </p>
+        </field>
+    </record>
+
 </odoo>

@@ -23,11 +23,11 @@
     # Data files loaded at installation
     'data': [
         'security/ir.model.access.csv',
-        
+
         'data/sequence.xml',
-        
-        'views/menu.xml',
+
         'views/trading_trade_views.xml',
+        'views/menu.xml',
         'views/trading_futures_views.xml',
         'views/purchase_order.xml',
         'views/stock_views.xml',
@@ -46,7 +46,7 @@
     #     ],
     # },
     # 'post_init_hook': 'set_default_container_type',
-    
+
     # Installation settings
     'installable': True,
     'application': True,

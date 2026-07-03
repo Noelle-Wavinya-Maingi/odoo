@@ -106,7 +106,8 @@ class PurchaseOrder(models.Model):
                 'trade_type': 'long',
                 'quantity': total_qty,
                 'price': avg_price,
-                'currency_id': order.currency_id.id,
+                'purchase_currency_id': order.currency_id.id,
+                'purchase_date': order.date_order.date() if order.date_order else fields.Date.context_today(self),
                 'purchase_id': order.id,
                 'status': 'confirmed',
             }
