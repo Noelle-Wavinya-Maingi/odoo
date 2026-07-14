@@ -12,14 +12,7 @@ class ResConfigSettings(models.TransientModel):
     company_industry = fields.Selection([
         ('shipping', 'Shipping & Logistics'),
         ('trading', 'Trading & Distribution'),
-        ('manufacturing', 'Manufacturing'),
-        ('construction', 'Construction'),
-        ('services', 'Services'),
-        ('retail', 'Retail'),
-        ('healthcare', 'Healthcare'),
-        ('agriculture', 'Agriculture'),
-        ('mining', 'Mining'),
-        ('energy', 'Energy'),
+        ('manufacturing', 'Manufacturing')
     ], string='Company Industry', 
        default='trading',
        config_parameter='operations.company_industry',
@@ -65,11 +58,11 @@ class ResConfigSettings(models.TransientModel):
                                               default=True)
     
     # Module Features (Dynamic based on industry)
-    module_shipping = fields.Boolean(string='Shipping Management',
+    install_shipping = fields.Boolean(string='Shipping Management',
                                      help='Install shipping module')
-    module_trading = fields.Boolean(string='Trading Management',
+    install_trading = fields.Boolean(string='Trading Management',
                                     help='Install trading module')
-    module_manufacturing = fields.Boolean(string='Manufacturing',
+    install_manufacturing = fields.Boolean(string='Manufacturing',
                                           help='Install manufacturing module')
     
     # Industry-specific Settings
@@ -78,40 +71,14 @@ class ResConfigSettings(models.TransientModel):
         ('bulk', 'Bulk Shipping'),
         ('breakbulk', 'Breakbulk'),
         ('roro', 'Ro-Ro'),
-    ], string='Shipping Type',
-       config_parameter='operations.shipping_type')
+    ], string='Shipping Type')
     
     trading_type = fields.Selection([
         ('wholesale', 'Wholesale'),
         ('retail', 'Retail'),
         ('distribution', 'Distribution'),
         ('import_export', 'Import/Export'),
-    ], string='Trading Type',
-       config_parameter='operations.trading_type')
-    
-    # Document Settings
-    use_digital_signature = fields.Boolean(string='Use Digital Signature',
-                                           config_parameter='operations.use_digital_signature')
-    document_archive = fields.Boolean(string='Archive Documents',
-                                      config_parameter='operations.document_archive')
-    
-    # Workflow Settings
-    approval_required = fields.Boolean(string='Require Approval',
-                                       config_parameter='operations.approval_required')
-    multi_level_approval = fields.Boolean(string='Multi-level Approval',
-                                          config_parameter='operations.multi_level_approval')
-    
-    # Notification Settings
-    notify_on_creation = fields.Boolean(string='Notify on Creation',
-                                        config_parameter='operations.notify_on_creation')
-    notify_on_completion = fields.Boolean(string='Notify on Completion',
-                                          config_parameter='operations.notify_on_completion')
-    
-    # Accounting Integration
-    auto_create_invoice = fields.Boolean(string='Auto-create Invoice',
-                                          config_parameter='operations.auto_create_invoice')
-    auto_create_picking = fields.Boolean(string='Auto-create Picking',
-                                          config_parameter='operations.auto_create_picking')
+    ], string='Trading Type')
     
     # Dashboard Configuration
     dashboard_view = fields.Selection([
@@ -123,13 +90,7 @@ class ResConfigSettings(models.TransientModel):
        default='kanban',
        config_parameter='operations.dashboard_view')
     
-    # Industry-specific UI
-    show_budget_tab = fields.Boolean(string='Show Budget Tab',
-                                      compute='_compute_industry_features')
-    show_voyage_tab = fields.Boolean(string='Show Voyage Tab',
-                                      compute='_compute_industry_features')
-    show_quality_tab = fields.Boolean(string='Show Quality Tab',
-                                       compute='_compute_industry_features')
+    industry_locked = fields.Boolean(string="Industry Locked", compute='_compute_industry_locked')
     
     @api.depends('company_industry')
     def _compute_industry_config(self):
@@ -167,57 +128,81 @@ class ResConfigSettings(models.TransientModel):
                 })
     
     @api.depends('company_industry')
-    def _compute_industry_features(self):
-        """Enable/disable features based on industry"""
+    def _compute_industry_locked(self):
+        locked = self.env['ir.config_parameter'].sudo().get_param('operations.industry_locked', False)
+        
         for record in self:
-            # Default values
-            record.show_budget_tab = True
-            record.show_voyage_tab = False
-            record.show_quality_tab = False
+            record.industry_locked = bool(locked)
             
-            if record.company_industry == 'shipping':
-                record.show_voyage_tab = True
-            elif record.company_industry == 'manufacturing':
-                record.show_quality_tab = True
-                record.show_budget_tab = True
-            elif record.company_industry == 'trading':
-                record.show_budget_tab = True
+    def action_unlock_industry(self):
+        self.ensure_one()
+    
+        if not self.env.user.has_group('base.group_system'):
+            raise UserError(_("Only system administrators can change the industry configuration."))
+    
+        # Unlock and reload
+        self.env['ir.config_parameter'].sudo().set_param('operations.industry_locked', False)
+        self.env['ir.config_parameter'].sudo().set_param('operations.active_industry', False)
+    
+        # Return a new action to reopen the settings popup fresh
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Operations Settings',
+            'res_model': 'res.config.settings',
+            'view_mode': 'form',
+            'view_id': self.env.ref('operations.view_operations_config_settings').id,
+            'target': 'new',
+            'context': {'module': 'operations'},
+        }
     
     @api.onchange('company_industry')
     def _onchange_company_industry(self):
         """Auto-configure based on industry selection"""
         if self.company_industry:
             # Auto-enable relevant modules
+            params = self.env['ir.config_parameter'].sudo()
+        
             if self.company_industry == 'shipping':
-                self.module_shipping = True
-                self.shipping_type = 'container'
+                self.install_shipping = True
+                # Only default if nothing saved yet
+                if not self.shipping_type and not params.get_param('operations.shipping_type'):
+                    self.shipping_type = 'container'
             elif self.company_industry == 'trading':
-                self.module_trading = True
-                self.trading_type = 'wholesale'
+                self.install_trading = True
+                # Only default if nothing saved yet
+                if not self.trading_type and not params.get_param('operations.trading_type'):
+                    self.trading_type = 'wholesale'
             elif self.company_industry == 'manufacturing':
-                self.module_manufacturing = True
-                self.module_trading = True
-    
+                self.install_manufacturing = True
+                self.install_trading = True
     def execute(self):
         """Override execute to handle module installation"""
         # Get the current values before saving
-        current_shipping = self.module_shipping
-        current_trading = self.module_trading
-        current_manufacturing = self.module_manufacturing
-        
-        # Call super to save settings
+        params = self.env['ir.config_parameter'].sudo()
+        current_shipping = self.install_shipping
+        current_trading = self.install_trading
+        current_manufacturing = self.install_manufacturing
+
+        # Read what was previously installed via these checkboxes
+        was_shipping_installed = params.get_param('operations.shipping_module_installed', False)
+        was_trading_installed = params.get_param('operations.trading_module_installed', False)
+        was_manufacturing_installed = params.get_param('operations.manufacturing_module_installed', False)
+
         result = super().execute()
         
         # Now install modules if needed
         modules_to_install = []
-        
-        if current_shipping:
-            modules_to_install.append('operations_shipping')
-        if current_trading:
+
+        if current_shipping and not was_shipping_installed:
+            modules_to_install.append('quotation')
+            params.set_param('operations.shipping_module_installed', True)
+        if current_trading and not was_trading_installed:
             modules_to_install.append('trading')
-        if current_manufacturing:
+            params.set_param('operations.trading_module_installed', True)
+        if current_manufacturing and not was_manufacturing_installed:
             modules_to_install.append('mrp')
-        
+            params.set_param('operations.manufacturing_module_installed', True)
+
         if modules_to_install:
             self._install_modules(modules_to_install)
         
@@ -227,64 +212,80 @@ class ResConfigSettings(models.TransientModel):
         """Save settings with validation"""
         super().set_values()
         
+        if not self.company_industry:
+            return
+        
+        params = self.env['ir.config_parameter'].sudo()
+        previous_industry = params.get_param('operations.active_industry', False)
         # Validate industry-specific requirements
         if self.company_industry == 'shipping' and not self.shipping_type:
             raise UserError(_("Please select a shipping type for shipping industry"))
         
         # Set industry-specific parameters
-        self.env['ir.config_parameter'].sudo().set_param(
-            'operations.active_industry', self.company_industry
-        )
+        self.env['ir.config_parameter'].sudo().set_param('operations.trading_type', self.trading_type or '')
+        self.env['ir.config_parameter'].sudo().set_param('operations.shipping_type', self.shipping_type or '')
+        self.env['ir.config_parameter'].sudo().set_param('operations.active_industry', self.company_industry)
+        self.env['ir.config_parameter'].sudo().set_param('operations.industry_locked', True)
         
         # Trigger industry setup
-        self._setup_industry_environment()
+        if previous_industry != self.company_industry:
+            self._setup_industry_environment()
+
+    @api.model
+    def get_values(self):
+        res = super().get_values()
+        params = self.env['ir.config_parameter'].sudo()
+        
+        trading_type = params.get_param('operations.trading_type', False)
+        shipping_type = params.get_param('operations.shipping_type', False)
+    
+        res.update({
+            'trading_type': trading_type if trading_type else False,
+            'shipping_type': shipping_type if shipping_type else False,
+        })
+        return res
     
     def _install_modules(self, module_names):
         """Install modules by name - matches base method signature"""
         try:
-            # Get module IDs
-            module_ids = self.env['ir.module.module'].search([
-                ('name', 'in', module_names),
-                ('state', 'in', ['uninstalled', 'to install', 'to upgrade'])
-            ])
-            
-            if module_ids:
-                # Mark modules for installation
-                module_ids.button_immediate_install()
-                
-                # Get display names for notification
-                display_names = []
-                for module_name in module_names:
-                    if module_name == 'operations_shipping':
-                        display_names.append('Shipping Management')
-                    elif module_name == 'operations_trading':
-                        display_names.append('Trading Management')
-                    elif module_name == 'operations_manufacturing':
-                        display_names.append('Manufacturing')
-                
-                # Show success message
-                message = _("Modules installed successfully: %s") % ', '.join(display_names)
-                _logger.info(message)
-                
-                # Use the proper notification method
-                self.env['bus.bus']._sendone(self.env.user.partner_id, 'simple_notification', {
-                    'title': _('Module Installation'),
-                    'message': message,
-                    'sticky': True,
-                    'type': 'success',
-                })
-                
-            else:
-                # Modules might already be installed
-                installed = self.env['ir.module.module'].search([
-                    ('name', 'in', module_names),
-                    ('state', '=', 'installed')
-                ])
-                if installed:
-                    _logger.info("Modules already installed: %s", module_names)
+            # Define dependencies that must be installed before each module
+            dependency_map = {
+                'trading': ['purchase', 'sale_management', 'stock'],
+                'operations_shipping': ['stock'],
+                'mrp': ['stock', 'purchase'],
+            }
+
+            # Build ordered list: dependencies first, then the module itself
+            ordered_modules = []
+            for module_name in module_names:
+                deps = dependency_map.get(module_name, [])
+                for dep in deps:
+                    if dep not in ordered_modules:
+                        ordered_modules.append(dep)
+                if module_name not in ordered_modules:
+                    ordered_modules.append(module_name)
+
+
+            # Install in batches — dependencies first, then main modules
+            for module_name in ordered_modules:
+                module = self.env['ir.module.module'].search([
+                    ('name', '=', module_name),
+                    ('state', 'in', ['uninstalled', 'to install', 'to upgrade'])
+                ], limit=1)
+
+                if module:
+                    module.button_immediate_install()
                 else:
-                    _logger.warning("Modules not found: %s", module_names)
-                    
+                    _logger.info("⏭️ Already installed or not found: %s", module_name)
+
+            # Show success
+            self.env['bus.bus']._sendone(self.env.user.partner_id, 'simple_notification', {
+                'title': _('Modules Installed'),
+                'message': _("Successfully installed: %s") % ', '.join(module_names),
+                'sticky': True,
+                'type': 'success',
+            })
+
         except Exception as e:
             _logger.error("Failed to install modules %s: %s", module_names, e)
             # Send error notification

@@ -86,7 +86,7 @@ class SaleOrder(models.Model):
                 'trade_type': trade_type,
                 'quantity': total_qty,
                 'sales_price': avg_price,
-                'currency_id': order.currency_id.id,
+                'sale_currency_id': order.currency_id.id,
                 'status': 'confirmed',
                 'product_id': product.id if product else False,
                 'sale_order_ids': [(4, order.id)],
@@ -95,23 +95,28 @@ class SaleOrder(models.Model):
             trade = self.env['trading.trade'].create(trade_vals)
             trade._compute_all_trade_fields()
             
-            order.message_post(body=f"""
-                <p>✅ A new trade has been automatically created for this sale order:</p>
-                <ul>
-                    <li><strong>Trade:</strong> {trade.name}</li>
-                    <li><strong>Product:</strong> {product.name if product else 'N/A'}</li>
-                    <li><strong>Quantity:</strong> {trade.quantity}</li>
-                    <li><strong>Price:</strong> {trade.price} {trade.currency_id.symbol}</li>
-                </ul>
-                <p><strong>Note:</strong> This is a sales trade. If you need to link to a purchase trade, please update the trade field manually.</p>
-            """)
+            order.activity_schedule(
+                'mail.mail_activity_data_todo',
+                summary='Sales Order Confirmed - New Trade Created',
+                note=f"""
+                        <p>A new trade has been automatically created for this sale order:</p>
+                        <ul>
+                            <li><strong>Trade:</strong> {trade.name}</li>
+                            <li><strong>Product:</strong> {product.name if product else 'N/A'}</li>
+                            <li><strong>Quantity:</strong> {trade.quantity}</li>
+                            <li><strong>Price:</strong> {trade.sales_price} {trade.currency_id.symbol}</li>
+                        </ul>
+                        <p><strong>Note:</strong> This is a sales trade. If you need to link to a purchase trade, please update the trade field manually.</p>
+                    """,
+                    user_id=order.user_id.id or self.env.user.id
+                )
             
             return trade
             
         except Exception as e:
             order.message_post(body=f"""
-                <p>❌ <strong>Error creating trade:</strong></p>
-                <p>{str(e)}</p>
-                <p>Please create the trade manually.</p>
+                Error creating trade:
+                {str(e)}
+                Please create the trade manually.
             """)
             return False

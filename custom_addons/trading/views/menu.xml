@@ -1,30 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <!-- Actions -->
-    <record id="action_trading_root" model="ir.actions.act_window">
-        <field name="name">Trading</field>
-        <field name="res_model">trading.trade</field>
-        <field name="view_mode">list,form</field>
-    </record>
-
     <record id="action_trading_trades" model="ir.actions.act_window">
         <field name="name">Trades</field>
         <field name="res_model">trading.trade</field>
-        <field name="view_mode">list,form,pivot</field>
-    </record>
-    <record id="action_trading_futures" model="ir.actions.act_window">
-        <field name="name">Futures</field>
-        <field name="res_model">trading.futures</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">kanban,list,form,graph,pivot</field>
+        <field name="search_view_id" ref="view_trading_trade_search"/>
+        <field name="context">{'search_default_groupby_status': 1}</field>
     </record>
 
     <!-- Root Menu -->
-    <menuitem id="menu_trading_root" name="Trading" action="action_trading_root" sequence="10" />
+    <menuitem id="menu_trading_root" name="Trading" action="action_trading_trades" sequence="10" />
 
     <!-- Trades -->
-     <menuitem id="menu_trading_trades" name="Trades" parent="menu_trading_root" action="action_trading_trades" />
+    <menuitem id="menu_trading_trades" name="Trades" parent="menu_trading_root" action="action_trading_trades" />
 
-     <!-- Futures -->
-      <menuitem id="menu_trading_futures" name="Futures" parent="menu_trading_root" action="action_trading_futures" />
-    
+    <!-- Reporting -->
+    <menuitem id="menu_trading_reporting" name="Reporting" parent="menu_trading_root"
+              action="action_trading_trade_reporting" sequence="50" />
 </odoo>

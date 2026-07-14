@@ -6,7 +6,7 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='partner_id']" position="after">
-                    <field name="trade_id" />
+                    <field name="trade_id" domain="[('status', '=', 'confirmed')]" readonly="state in ['sent', 'sale']" />
                 
             </xpath>
         </field>

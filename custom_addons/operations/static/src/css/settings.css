@@ -1,0 +1,4 @@
+.o_config_form .o_control_panel .o_cp_buttons .o_form_button_save,
+.o_config_form .o_control_panel .o_cp_buttons .o_form_button_discard {
+    display: none !important;
+}
