@@ -1,8 +1,45 @@
 import logging
 
+_logger = logging.getLogger(__name__)
+
+
 class AccountMoveLifecycle(models.Model):
     """create/write/action_post/button_draft overrides that wire invoices and bills into their related trade (trade_id propagation, triggering P&L updates at the right lifecycle moments)."""
     _inherit = 'account.move'
+    
+    def _reverse_trade_pnl_contribution(self, trade):
+        """Reverse this move's already-applied contribution to the trade's additional costs or revenue, and clear the trade_pnl_processed so it can be reprocessed later"""
+        self.ensure_one()
+
+        if not self.trade_pnl_processed or not trade:
+            return
+
+        company = trade.company_id or self.env.company
+        rate_date = self.invoice_date or fields.Date.context_today(self)
+        invoice_currency = self.currency_id
+        trade_currency = trade.currency_id
+
+        def to_trade_currency(amount):
+            if invoice_currency and trade_currency and invoice_currency != trade_currency:
+                return invoice_currency._convert(amount, trade_currency, company, rate_date)
+            return amount
+
+        if self.move_type in ['out_invoice', 'out_refund'] and not self.is_from_sale_order:
+            total_amount = sum(to_trade_currency(line.price_unit * line.quantity) for line in self.invoice_line_ids if line.display_type not in ('line_section', 'line_note', 'tax'))
+
+            if total_amount > 0:
+                trade.write({'additional_revenue': max(trade.additional_revenue - total_amount, 0)})
+                trade._compute_all_trade_fields()
+
+        elif self.move_type in ['in_invoice', 'in_refund'] and not self.is_from_purchase_order:
+            total_costs = sum(to_trade_currency(line.price_unit * line.quantity) for line in self.invoice_line_ids if line.display_type not in ('line_section', 'line_note', 'tax') and line.product_id != trade.product_id)
+
+            if total_costs > 0:
+                trade.write({'additional_costs': max(trade.additional_costs - total_costs, 0)})
+                trade._compute_all_trade_fields()
+
+        self.trade_pnl_processed = False
+                            
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -38,6 +75,8 @@ class AccountMoveLifecycle(models.Model):
                 if not record.is_from_purchase_order and not record.is_from_sale_order:
                     record._update_trade_pnl_from_invoice()
                     
+                elif record.is_from_purchase_order:
+                    
             else:
                 record._process_line_level_trades()
 
@@ -49,9 +88,7 @@ class AccountMoveLifecycle(models.Model):
             for command in vals['invoice_line_ids']:
                 if command[0] == 1 and isinstance(command[2], dict) and 'trade_id' in command[2]:
                     new_trade_id = command[2]['trade_id']
-                    
-                    if new_trade_id:
-                        vals['trade_id'] = new_trade_id
+                    vals['trade_id'] = new_trade_id or False
                     break
 
         old_trade_ids = {}
@@ -72,6 +109,7 @@ class AccountMoveLifecycle(models.Model):
                 old_id = old_trade_ids.get(move.id)
                 if old_id and old_id != new_trade_id:
                     old_trade = self.env['trading.trade'].browse(old_id)
+                    move._reverse_trade_pnl_contribution(old_trade)
                     old_trade._compute_invoice_count()
 
                 if new_trade_id:
@@ -188,32 +226,6 @@ class AccountMoveLifecycle(models.Model):
     def button_draft(self):
         """Reverse trade P&L contribution when invoice is reset to draft."""
         for move in self:
-            if move.trade_pnl_processed and move.trade_id:
-                trade = move.trade_id
-                company = trade.company_id or self.env.company
-                rate_date = move.invoice_date or fields.Date.context_today(self)
-                invoice_currency = move.currency_id
-                trade_currency = trade.currency_id
-
-                def to_trade_currency(amount):
-                    if invoice_currency and trade_currency and invoice_currency != trade_currency:
-                        return invoice_currency._convert(amount, trade_currency, company, rate_date)
-                    return amount
-
-                if move.move_type in ['out_invoice', 'out_refund'] and not move.is_from_sale_order:
-                    total_amount = sum(to_trade_currency(line.price_unit * line.quantity) for line in move.invoice_line_ids if not line.display_type)
-                    if total_amount > 0:
-                        old_revenue = trade.additional_revenue
-                        trade.write({'additional_revenue': max(trade.additional_revenue - total_amount, 0)})
-                        trade._compute_all_trade_fields()
-
-                elif move.move_type in ['in_invoice', 'in_refund']:
-                    total_costs = sum(to_trade_currency(line.price_unit * line.quantity) for line in move.invoice_line_ids if not line.display_type and line.product_id != trade.product_id)
-                    if total_costs > 0:
-                        old_costs = trade.additional_costs
-                        trade.write({'additional_costs': max(trade.additional_costs - total_costs, 0)})
-                        trade._compute_all_trade_fields()
-
-                move.trade_pnl_processed = False
+            move._reverse_trade_pnl_contribution(move.trade_id)
 
         return super().button_draft()

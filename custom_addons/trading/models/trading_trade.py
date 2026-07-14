@@ -50,7 +50,6 @@ class TradingTrade(models.Model):
         string="Sales Price",
         currency_field='sale_currency_id',
         compute='_compute_sales_price_and_currency',
-        inverse='_inverse_sales_price',
         store=True,
         readonly=False,
         help="Actual sale price per unit, in its original sale currency. "
@@ -61,7 +60,6 @@ class TradingTrade(models.Model):
         'res.currency',
         string='Sale Currency',
         compute='_compute_sales_price_and_currency',
-        inverse='_inverse_sale_currency_id',
         store=True,
         readonly=False,
         default=lambda self: self.env.company.currency_id,
@@ -166,13 +164,13 @@ class TradingTrade(models.Model):
                 else:
                     seq_code = 'trading.trade.long'
                 vals['name'] = self.env['ir.sequence'].next_by_code(seq_code) or 'New'
-                
+
             # Ensure product_id is set
             if 'product_id' not in vals or not vals.get('product_id'):
                 _logger.warning(f"Creating trade without product_id!")
                 
         return super().create(vals_list)
-    
+
     def action_confirm(self):
         """Open the trade for trading"""
         for trade in self:

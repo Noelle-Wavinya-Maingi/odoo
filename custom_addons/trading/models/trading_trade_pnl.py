@@ -88,6 +88,14 @@ class TradingTradePnl(models.Model):
         currency_field='currency_id',
         help='Cost basis for sold items in reporting currency (Sold Qty × Purchase Price converted)'
     )
+    
+    open_position_cost_basis = fields.Monetary(
+        string='Open Position Cost Basis',
+        compute='_compute_costs',
+        store=True,
+        currency_field='currency_id',
+        help='Cost basis for sold items in reporting currency'
+    )
 
     win_rate = fields.Float(
         string='Win Rate (%)',
@@ -218,9 +226,11 @@ class TradingTradePnl(models.Model):
             if record.quantity > 0 and record.price_in_base_currency > 0:
                 record.total_purchase_cost = record.quantity * record.price_in_base_currency
                 record.total_sales_cost_basis = record.total_sold_quantity * record.price_in_base_currency
+                record.open_position_cost_basis = abs(record.open_position_quantity) * record.price_in_base_currency
             else:
                 record.total_purchase_cost = 0.0
                 record.total_sales_cost_basis = 0.0
+                record.open_position_cost_basis = 0.0
 
     @api.depends('sale_order_ids', 'sale_order_ids.state', 'sale_order_ids.order_line', 'price')
     def _compute_performance(self):
