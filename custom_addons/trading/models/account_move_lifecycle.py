@@ -77,6 +77,7 @@ class AccountMoveLifecycle(models.Model):
                     record._update_trade_pnl_from_invoice()
                     
                 elif record.is_from_purchase_order:
+                    _logger.info(f"💰 Processing purchase order additional costs")
                     
             else:
                 record._process_line_level_trades()
