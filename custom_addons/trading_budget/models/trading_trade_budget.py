@@ -3,10 +3,7 @@ from odoo import api, fields, models, _
 
 
 class TradingTradeBudget(models.Model):
-    """Budget header for a trade -- mirrors omni_ops's omni.mrp.budget header shape
-    (own reference number, own draft/confirmed/closed state, analytic account) but
-    anchored on trading.trade instead of mrp.production, and without the FOB/Freight/
-    LOD service-type split (trading has no equivalent). Exactly one per trade."""
+    """Budget header for a trade. Exactly one per trade."""
     _name = 'trading.trade.budget'
     _description = 'Trade Budget'
     _order = 'create_date desc'
@@ -157,24 +154,24 @@ class TradingTradeBudget(models.Model):
             quoted_revenue = 0.0
             
             if trade.trade_type == 'long':
-                print("✨ This is a long trade!")
+                
                 quoted_cost = trade.price_in_base_currency * trade.quantity
-                print(f"💄 This is my quoted cost: {quoted_cost}")
+                
                 if margin_fraction:
-                    quoted_revenue = quoted_cost * (1 - margin_fraction)
-                    print(f'🥰 This is the quoted revenue/budgeted revenue: {quoted_revenue}')
+                    quoted_revenue = quoted_cost * (1 + margin_fraction)
+                
             elif trade.trade_type == 'short':
-                print(f'🌟 This is a short trade:')
+                
                 quoted_revenue = trade.sales_price_in_base_currency * trade.quantity
-                print(f"💄 This is my quoted revenue: {quoted_revenue}")
+                
                 if margin_fraction and (1 + margin_fraction) != 0:
                     quoted_cost = quoted_revenue / (1 + margin_fraction)
-                    print(f'🥰 This is the quoted cost/budgeted cost: {quoted_cost}')
+                    
                         
             budget.total_budgeted_cost = line_cost or quoted_cost
-            print(f'🌼 This is the budgeted cost!!: {budget.total_budgeted_cost}')
+            
             budget.total_budgeted_revenue = line_revenue or quoted_revenue
-            print(f'😁 This is the budgeted revenue!!: {budget.total_budgeted_revenue}')
+            
             
 
     @api.depends('total_budgeted_cost', 'total_budgeted_revenue', 'trade_id.additional_costs', 'trade_id.additional_revenue')
