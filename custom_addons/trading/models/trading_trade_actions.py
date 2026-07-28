@@ -26,9 +26,9 @@ class TradingTradeActions(models.Model):
     def _compute_invoice_count(self):
         """Compute all the invoices attached to the trade."""
         for record in self:
-            moves = self.env['account.move'].search([('trade_id', '=', record.id)])
-            invoices = moves.filtered(lambda m: m.move_type in ['out_invoice', 'out_refund'])
-            bills = moves.filtered(lambda m: m.move_type in ['in_invoice', 'in_refund'])
+            # moves = self.env['account.move'].search([('trade_id', '=', record.id)])
+            invoices = record.invoice_ids.filtered(lambda m: m.move_type in ['out_invoice', 'out_refund'])
+            bills = record.invoice_ids.filtered(lambda m: m.move_type in ['in_invoice', 'in_refund'])
             record.invoice_count = len(invoices)
             record.bill_count = len(bills)
 

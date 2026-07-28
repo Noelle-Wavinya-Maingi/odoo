@@ -106,6 +106,7 @@ class TradingTrade(models.Model):
         'product.product',
         string='Product',
         required=True,
+        domain="[('product_tmpl_id.is_tradeable', '=', True)]",
         help="Product associated with this trade"
     )
     

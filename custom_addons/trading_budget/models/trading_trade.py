@@ -7,8 +7,7 @@ class TradingTradeBudgetBridge(models.Model):
     """Adds the optional Trade Budget feature onto trading.trade. Lives in
     the 'trading_budget' bridge module (depends on both 'trading' and
     'budgets') so that installing/uninstalling this feature never touches
-    core Trading -- see trading/models/trading_trade.py for the no-op stub
-    methods this overrides."""
+    core Trading."""
     _inherit = 'trading.trade'
 
     # ── Budget header (trading_trade_budget.py) -- exactly one per trade ──

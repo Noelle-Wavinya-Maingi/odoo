@@ -183,7 +183,7 @@ class TradingTradePnl(models.Model):
             # TOTAL P&L
             record.total_pnl = record.realized_pnl + record.unrealized_pnl + record.additional_revenue
 
-            _logger.warning(f"   💰 TOTAL P&L = {record.total_pnl} " f"(realized={record.realized_pnl} + unrealized={record.unrealized_pnl} " f"+ additional_revenue={record.additional_revenue}) " f"[{record.currency_id.name if record.currency_id else 'N/A'}]")
+            _logger.debug(f"   💰 TOTAL P&L = {record.total_pnl} " f"(realized={record.realized_pnl} + unrealized={record.unrealized_pnl} " f"+ additional_revenue={record.additional_revenue}) " f"[{record.currency_id.name if record.currency_id else 'N/A'}]")
 
             # P&L PERCENTAGE
             if record.trade_type == 'long':

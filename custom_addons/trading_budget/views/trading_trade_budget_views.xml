@@ -139,7 +139,7 @@
                     </div><br/>
 
                     <!-- Budget Lines -->
-                     <h4>Additional Costs &amp; Additional Revenue</h4> <hr/>
+                     <h4 style="text-align:center;">Additional Costs &amp; Additional Revenue</h4> <hr/>
                     <field name="budget_line_ids" context="{'default_budget_id': id}" readonly="state == 'closed'">
                         <list editable="bottom" create="1" delete="1" string="Budget Lines" decoration-bf="display_type == 'line_section'">
                             <field name="sequence" widget="handle"/>
