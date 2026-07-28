@@ -403,7 +403,7 @@
     <record id="action_trading_trade_reporting" model="ir.actions.act_window">
         <field name="name">Trading Reporting</field>
         <field name="res_model">trading.trade</field>
-        <field name="view_mode">graph,pivot,kanban,list</field>
+        <field name="view_mode">graph,pivot,list</field>
         <field name="search_view_id" ref="view_trading_trade_search"/>
         <field name="context">{'search_default_filter_confirmed': 0}</field>
         <field name="help" type="html">
