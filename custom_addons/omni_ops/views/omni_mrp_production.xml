@@ -1,0 +1,184 @@
+<odoo>
+    <record id="omni_mrp_production_form" model="ir.ui.view">
+        <field name="name">omni.mrp.production.form</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view" />
+        <field name="arch" type="xml">
+
+            <!-- Hide Components tab for service BOMs -->
+            <xpath expr="//page[@name='components']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            
+            <!-- Hide Operations tab for service BOMs (we'll use custom tabs instead) -->
+            <xpath expr="//page[@name='operations']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Remove confirmation warning from Produce buttons when no components -->
+            <xpath expr="//header/button[@name='button_mark_done'][@invisible='move_raw_ids or not show_produce']" position="replace">
+                <button name="button_mark_done" invisible="move_raw_ids or not show_produce" string="Confirm" type="object" class="oe_highlight" data-hotkey="g"/>
+            </xpath>
+            <xpath expr="//header/button[@name='button_mark_done'][@invisible='move_raw_ids or not show_produce_all']" position="replace">
+                <button name="button_mark_done" invisible="move_raw_ids or not show_produce_all" string="Confirm All" type="object" class="oe_highlight" data-hotkey="g"/>
+            </xpath>
+
+            <!-- Add BOM operations tabs based on service scope -->
+            <xpath expr="//page[@name='components']" position="after">
+
+                <page string="FOB Operations" name="fob_operations" invisible="bom_type != 'service' or not has_fob_service">
+                    <field name="fob_operations" nolabel="1" 
+                           context="{'default_production_id': id, 'default_freight_service_type': 'fob'}">
+                        <list create="true" delete="true" editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="workcenter_id" optional="show" required="0" placeholder="Optional - will auto-create if needed"/>
+                            <field name="freight_service_type" optional="show"/>
+                            <!-- <field name="operation_note" optional="show"/> -->
+                            <field name="state" widget="badge" decoration-success="state == 'done'" decoration-warning="state == 'progress'" decoration-danger="state == 'cancel'"/>
+                            <field name="date_start_formatted" optional="show" widget="html"/>
+                            <field name="date_finished_formatted" optional="show" widget="html"/>       
+                            <button name="action_service_start" type="object" string="Start" invisible="state in ('progress', 'done', 'cancel')" style="background-color: #4CAF50; color: white;"/>
+                            <button name="action_service_done" type="object" string="Complete" invisible="state != 'progress'" style="background-color: #4CAF50; color: white;"/>
+                            <button name="action_service_cancel" type="object" string="Cancel" invisible="state != 'done'" style="background-color: #f44336; color: white;"/>
+                        </list>
+                    </field>
+                </page>
+
+                <page string="Freight Operations" name="freight_operations" invisible="bom_type != 'service' or not has_freight_service">
+                    <field name="freight_operations" nolabel="1" 
+                           context="{'default_production_id': id, 'default_freight_service_type': 'freight'}">
+                        <list create="true" delete="true" editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="workcenter_id" optional="show" required="0" placeholder="Optional - will auto-create if needed"/>
+                            <field name="freight_service_type" optional="show"/>
+                            <!-- <field name="operation_note" optional="show"/> -->
+                            <field name="state" widget="badge" decoration-success="state == 'done'" decoration-warning="state == 'progress'" decoration-danger="state == 'cancel'"/>
+                            <field name="date_start_formatted" optional="show" widget="html"/>
+                            <field name="date_finished_formatted" optional="show" widget="html"/>
+                            <button name="action_service_start" type="object" string="Start" invisible="state in ('progress', 'done', 'cancel')" style="background-color: #4CAF50; color: white;"/>
+                            <button name="action_service_done" type="object" string="Complete" invisible="state != 'progress'" style="background-color: #4CAF50; color: white;"/>
+                            <button name="action_service_cancel" type="object" string="Cancel" invisible="state != 'done'" style="background-color: #f44336; color: white;"/>
+                        </list>
+                    </field>
+                </page>
+
+                <page string="Destination Operations" name="destination_operations" invisible="bom_type != 'service' or not has_lod_service">
+                    <field name="destination_operations" nolabel="1" 
+                           context="{'default_production_id': id, 'default_freight_service_type': 'lod'}">
+                        <list create="true" delete="true" editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="workcenter_id" optional="show" required="0" placeholder="Optional - will auto-create if needed"/>
+                            <field name="freight_service_type" optional="show"/>
+                            <!-- <field name="operation_note" optional="show"/> -->
+                            <field name="state" widget="badge" decoration-success="state == 'done'" decoration-warning="state == 'progress'" decoration-danger="state == 'cancel'"/>
+                            <field name="date_start_formatted" optional="show" widget="html"/>
+                            <field name="date_finished_formatted" optional="show" widget="html"/>
+                            <button name="action_service_start" type="object" string="Start" invisible="state in ('progress', 'done', 'cancel')" style="background-color: #4CAF50; color: white;" />
+                            <button name="action_service_done" type="object" string="Complete" invisible="state != 'progress'" style="background-color: #4CAF50; color: white;" icon="fa-check"/>
+                            <button name="action_service_cancel" type="object" string="Cancel" invisible="state != 'done'" style="background-color: #f44336; color: white;" icon="fa-times"/>
+                        </list>
+                    </field>
+                </page>
+
+            </xpath>
+
+            <!-- Add Budget Tab -->
+            <xpath expr="//page[@name='fob_operations']" position="before">
+
+                <page string="Budget" name="budget" invisible="bom_type != 'service'">
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_create_budget" type="object" string="Create Budget" 
+                                class="oe_stat_button" icon="fa-calculator" invisible="has_budget"/>
+                        <button name="action_view_budget" type="object" string="View Budget Details" 
+                                class="oe_stat_button" icon="fa-calculator" invisible="not has_budget"/>
+                    </div>
+                    
+                    <group invisible="not has_budget">
+                        <group>
+                            <field name="budget_id" invisible="not has_budget" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="budget_state" invisible="not has_budget" readonly="1"/>
+                        </group>
+                    </group>
+                    
+                    <div class="alert alert-info" role="alert" style="padding: 15px; background-color: #d1ecf1; border: 1px solid #bee5eb; margin-top: 15px;" invisible="not has_budget">
+                        <h5 style="margin-top: 0; color: #0c5460;">Budget Overview</h5>
+                        <p>Click "View Budget Details" above to see the complete budget with service-wise breakdown and profitability analysis.</p>
+                        <p><strong>Status:</strong> <field name="budget_state" widget="badge" nolabel="1" readonly="1"/></p>
+                        <p>Use the budget form to add expense lines, track actual costs, and monitor profitability by service type (FOB, Freight, LOD).</p>
+                    </div>
+                    
+                    <div class="alert alert-warning" role="alert" style="padding: 15px; background-color: #fff3cd; border: 1px solid #ffc107;" invisible="has_budget">
+                        <strong>No Budget Created Yet</strong>
+                        <p>Click the "Create Budget" button above to start tracking profitability for this manufacturing order.</p>
+                        <p>The budget will automatically copy charges from the connected quotation (FOB, Freight, LOD).</p>
+                    </div>
+                </page>
+
+            </xpath>
+
+            <!-- Add Additional Operations Tab -->
+            <xpath expr="//page[@name='miscellaneous']" position="replace">
+                
+                <page string="Additional Operations" name="additional_operations_misc">
+                    <field name="additional_operations_ids" nolabel="1" 
+                           context="{'default_production_id': id, 'form_view_ref': 'omni_ops.additional_file_operations_form_view'}">
+                        <list create="1" delete="1" editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="operation_title" string="Title"/>
+                            <field name="operation_center" string="Work Center" optional="show"/>
+                            <field name="operation_description" string="Description" optional="show" widget="html"/>
+                            <field name="service_type" optional="show"/>
+                            <field name="operation_duration" widget="float_time" optional="hide" string="Expected Duration"/>
+                            <field name="actual_duration" widget="float_time" optional="hide" string="Actual Duration"/>
+                            <field name="state" widget="badge" 
+                                   decoration-success="state == 'done'" 
+                                   decoration-warning="state == 'progress'" 
+                                   decoration-danger="state == 'cancel'"/>
+                            <field name="date_start" optional="show"/>
+                            <field name="date_finished" optional="show"/>
+                            <button name="action_service_start" type="object" string="Start" 
+                                    invisible="state in ('progress', 'done', 'cancel')" 
+                                    class="oe_link" 
+                                    icon="fa-play"/>
+                            <button name="action_service_done" type="object" string="Complete" 
+                                    invisible="state != 'progress'" 
+                                    class="oe_link" 
+                                    icon="fa-check"/>
+                            <button name="action_service_cancel" type="object" string="Cancel" 
+                                    invisible="state != 'done'" 
+                                    class="oe_link" 
+                                    icon="fa-times"/>
+                        </list>
+                    </field>
+                </page>
+
+            </xpath>
+
+            <!-- Hide Component Status field -->
+            <xpath expr="//field[@name='components_availability']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Hide Product Moves button by text content -->
+            <xpath expr="//button[.//span[hasclass('o_stat_text') and contains(text(), 'Product Moves')]]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Hide Shop Floor button -->
+            <!-- <xpath expr="//button[@name='action_open_shop_floor']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath> -->
+
+            <!-- Rename "To Produce" to "To Process" -->
+            <xpath expr="//span[contains(text(), 'To Produce')]" position="replace">
+                <span class='fw-bold'>To Process</span>
+            </xpath>
+
+        </field>
+    </record>
+</odoo> 

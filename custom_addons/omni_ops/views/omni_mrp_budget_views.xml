@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Budget Form View -->
+    <record id="omni_mrp_budget_form" model="ir.ui.view">
+        <field name="name">omni.mrp.budget.form</field>
+        <field name="model">omni.mrp.budget</field>
+        <field name="arch" type="xml">
+            <form string="Manufacturing Order Budget">
+                <header>
+                    <!-- <button name="action_copy_charges_from_quotation" string="Copy Charges from Quotation" 
+                            type="object" class="btn-secondary" invisible="state != 'draft'"/> -->
+                    <button name="action_confirm" string="Confirm" type="object" 
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_close" string="Close" type="object" 
+                            class="btn-secondary" invisible="state not in ('confirmed',)"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,closed"/>
+                </header>
+                
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group>
+                            <field name="production_id" readonly="1"/>
+                            <field name="currency_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="company_id" readonly="1" groups="base.group_multi_company"/>
+                            <field name="analytic_account_id"/>
+                        </group>
+                    </group>
+                    
+                    <!-- Summary Cards -->
+                    <div class="row mt-4">
+                        <div class="col-12 col-lg-4">
+                            <div class="card" style="border-left: 4px solid #0d6efd;">
+                                <div class="card-header" style="background-color: #e7f1ff;">
+                                    <h5><i class="fa fa-truck"/> FOB Service</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-2">
+                                        <div class="col-6 text-center">
+                                            <strong style="display: block; font-size: 11px; color: #6c757d;">Budgeted Amount</strong>
+                                            <field name="fob_budgeted_cost" widget="monetary" readonly="1" nolabel="1"/>
+                                        </div>
+                                        <div class="col-6 text-center">
+                                            <strong style="display: block; font-size: 11px; color: #6c757d;">Realised Costs</strong>
+                                            <field name="fob_actual_cost" widget="monetary" readonly="1" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <hr style="margin: 10px 0;"/>
+                                    <div class="row">
+                                        <div class="col text-center">
+                                            <strong style="display: block; font-size: 11px; color: #6c757d; margin-bottom: 5px;">Quoted Amount</strong>
+                                            <field name="fob_projected_revenue" widget="monetary" readonly="1" nolabel="1"/>
+                                        </div>
+                                        <div class="col text-center">
+                                            <strong style="display: block; font-size: 11px; color: #6c757d; margin-bottom: 5px;">Target Margin</strong>
+                                            <field name="fob_expected_margin_display" readonly="1" nolabel="1" 
+                                                   decoration-success="fob_projected_revenue - fob_budgeted_cost &gt; 0"
+                                                   decoration-danger="fob_projected_revenue - fob_budgeted_cost &lt; 0"
+                                                   widget="html"
+                                                   style="border: none; background: transparent; text-align: center; padding: 0; font-weight: bold; font-size: 14px;"/>
+                                        </div>
+                                        <div class="col text-center">
+                                            <strong style="display: block; font-size: 11px; color: #6c757d; margin-bottom: 5px;">Realised Margin</strong>
+                                            <field name="fob_margin_display" readonly="1" nolabel="1" 
+                                                   decoration-success="fob_projected_revenue - fob_actual_cost &gt; 0"
+                                                   decoration-danger="fob_projected_revenue - fob_actual_cost &lt; 0"
+                                                   widget="html"
+                                                   style="border: none; background: transparent; text-align: center; padding: 0; font-weight: bold; font-size: 14px;"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 col-lg-4">
+                            <div class="card" style="border-left: 4px solid #198754;">
+                                <div class="card-header" style="background-color: #d1e7dd;">
+                                    <h5><i class="fa fa-ship"/> Freight Service</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-2">
+                                        <div class="col-6 text-center">
+                                            <strong style="display: block; font-size: 11px; color: #6c757d;">Budgeted Amount</strong>
+                                            <field name="freight_budgeted_cost" widget="monetary" readonly="1" nolabel="1"/>
+                                        </div>
+                                        <div class="col-6 text-center">
+                                            <strong style="display: block; font-size: 11px; color: #6c757d;">Realised Costs</strong>
+                                            <field name="freight_actual_cost" widget="monetary" readonly="1" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <hr style="margin: 10px 0;"/>
+                                    <div class="row">
+                                        <div class="col text-center">
+                                            <strong style="display: block; font-size: 11px; color: #6c757d; margin-bottom: 5px;">Quoted Amount</strong>
+                                            <field name="freight_projected_revenue" widget="monetary" readonly="1" nolabel="1"/>
+                                        </div>
+                                        <div class="col text-center">
+                                            <strong style="display: block; font-size: 11px; color: #6c757d; margin-bottom: 5px;">Target Margin</strong>
+                                            <field name="freight_expected_margin_display" readonly="1" nolabel="1"
+                                                   decoration-success="freight_projected_revenue - freight_budgeted_cost &gt; 0"
+                                                   decoration-danger="freight_projected_revenue - freight_budgeted_cost &lt; 0"
+                                                   widget="html"
+                                                   style="border: none; background: transparent; text-align: center; padding: 0; font-weight: bold; font-size: 14px;"/>
+                                        </div>
+                                        <div class="col text-center">
+                                            <strong style="display: block; font-size: 11px; color: #6c757d; margin-bottom: 5px;">Realised Margin</strong>
+                                            <field name="freight_margin_display" readonly="1" nolabel="1"
+                                                   decoration-success="freight_projected_revenue - freight_actual_cost &gt; 0"
+                                                   decoration-danger="freight_projected_revenue - freight_actual_cost &lt; 0"
+                                                   widget="html"
+                                                   style="border: none; background: transparent; text-align: center; padding: 0; font-weight: bold; font-size: 14px;"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 col-lg-4">
+                            <div class="card" style="border-left: 4px solid #ffc107;">
+                                <div class="card-header" style="background-color: #fff3cd;">
+                                <h5><i class="fa fa-map-marker"/> DAP Service</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-2">
+                                        <div class="col-6 text-center">
+                                            <strong style="display: block; font-size: 11px; color: #6c757d;">Budgeted Amount</strong>
+                                            <field name="lod_budgeted_cost" widget="monetary" readonly="1" nolabel="1"/>
+                                        </div>
+                                        <div class="col-6 text-center">
+                                            <strong style="display: block; font-size: 11px; color: #6c757d;">Realised Costs</strong>
+                                            <field name="lod_actual_cost" widget="monetary" readonly="1" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <hr style="margin: 10px 0;"/>
+                                    <div class="row">
+                                        <div class="col text-center">
+                                            <strong style="display: block; font-size: 11px; color: #6c757d; margin-bottom: 5px;">Quoted Amount</strong>
+                                            <field name="lod_projected_revenue" widget="monetary" readonly="1" nolabel="1"/>
+                                        </div>
+                                        <div class="col text-center">
+                                            <strong style="display: block; font-size: 11px; color: #6c757d; margin-bottom: 5px;">Target Margin</strong>
+                                            <field name="lod_expected_margin_display" readonly="1" nolabel="1"
+                                                   decoration-success="lod_projected_revenue - lod_budgeted_cost &gt; 0"
+                                                   decoration-danger="lod_projected_revenue - lod_budgeted_cost &lt; 0"
+                                                   widget="html"
+                                                   style="border: none; background: transparent; text-align: center; padding: 0; font-weight: bold; font-size: 14px;"/>
+                                        </div>
+                                        <div class="col text-center">
+                                            <strong style="display: block; font-size: 11px; color: #6c757d; margin-bottom: 5px;">Realised Margin</strong>
+                                            <field name="lod_margin_display" readonly="1" nolabel="1"
+                                                   decoration-success="lod_projected_revenue - lod_actual_cost &gt; 0"
+                                                   decoration-danger="lod_projected_revenue - lod_actual_cost &lt; 0"
+                                                   widget="html"
+                                                   style="border: none; background: transparent; text-align: center; padding: 0; font-weight: bold; font-size: 14px;"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cumulative Summary -->
+                    <div class="row mt-3 mb-3">
+                        <div class="col-12">
+                            <div class="card bg-light" style="border: 2px solid #6c757d;">
+                                <div class="card-header" style="background-color: #f8f9fa;">
+                                    <h5 style="margin: 0; font-weight: bold; text-align: center;">Cumulative Summary</h5>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div class="row g-3">
+                                        <div class="col text-center">
+                                            <strong>Quotation Price</strong><br/>
+                                            <field name="quotation_price" widget="monetary" readonly="1" nolabel="1" style="font-size: 18px; font-weight: bold;"/>
+                                        </div>
+                                        <div class="col text-center">
+                                            <strong>Budgeted Amount</strong><br/>
+                                            <field name="total_budgeted_cost" widget="monetary" readonly="1" nolabel="1" style="font-size: 18px; font-weight: bold;"/>
+                                        </div>
+                                        <div class="col text-center">
+                                            <strong>Realised Costs</strong><br/>
+                                            <field name="total_actual_cost" widget="monetary" readonly="1" nolabel="1" style="font-size: 18px; font-weight: bold;"/>
+                                        </div>
+                                        <div class="col text-center">
+                                            <strong>Target Margin</strong><br/>
+                                            <field name="total_expected_margin_display" readonly="1" nolabel="1"
+                                                   decoration-success="quotation_price - total_budgeted_cost &gt; 0"
+                                                   decoration-danger="quotation_price - total_budgeted_cost &lt; 0"
+                                                   widget="html"
+                                                   style="border: none; background: transparent; text-align: center; padding: 0; font-weight: bold; font-size: 18px;"/>
+                                        </div>
+                                        <div class="col text-center">
+                                            <strong>Realised Margin</strong><br/>
+                                            <field name="total_margin_display" readonly="1" nolabel="1"
+                                                   decoration-success="quotation_price - total_actual_cost &gt; 0"
+                                                   decoration-danger="quotation_price - total_actual_cost &lt; 0"
+                                                   widget="html"
+                                                   style="border: none; background: transparent; text-align: center; padding: 0; font-weight: bold; font-size: 18px;"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Budget Lines -->
+                    <notebook>
+                        <page string="FOB Budget Lines" invisible="not has_fob_service">
+                            <field name="fob_budget_lines" context="{'default_service_type': 'fob'}">
+                                <list editable="bottom" create="1" delete="1" string="FOB Budget Lines">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name" required="1"/>
+                                    <field name="line_type" required="1"/>
+                                    <field name="partner_id"/>
+                                    <field name="product_id"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="budgeted_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="actual_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="variance_amount" widget="monetary" options="{'currency_field': 'currency_id'}" 
+                                                optional="show" decoration-success="variance_amount &lt; 0" 
+                                                decoration-danger="variance_amount &gt; 0"
+                                                readonly="1"/>
+                                    <field name="date_actual" optional="hide" string="Date"/>
+                                    <field name="expense_id" optional="show" string="Expense" decoration-expense-submitted="expense_is_submitted"/>
+                                    <field name="state" widget="badge" decoration-success="state == 'done'" decoration-info="state == 'confirmed'" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        
+                        <page string="Freight Budget Lines" invisible="not has_freight_service">
+                            <field name="freight_budget_lines" context="{'default_service_type': 'freight'}">
+                                <list editable="bottom" create="1" delete="1" string="Freight Budget Lines">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name" required="1"/>
+                                    <field name="line_type" required="1"/>
+                                    <field name="partner_id"/>
+                                    <field name="product_id"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="budgeted_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="actual_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="variance_amount" widget="monetary" options="{'currency_field': 'currency_id'}" 
+                                                optional="show" decoration-success="variance_amount &lt; 0" 
+                                                decoration-danger="variance_amount &gt; 0"
+                                                readonly="1"/>
+                                    <field name="date_actual" optional="hide" string="Date"/>
+                                    <field name="expense_id" optional="show" string="Expense" decoration-expense-submitted="expense_is_submitted"/>
+                                    <field name="state" widget="badge" decoration-success="state == 'done'" decoration-info="state == 'confirmed'" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        
+                        <page string="DAP Budget Lines" invisible="not has_lod_service">
+                            <field name="lod_budget_lines" context="{'default_service_type': 'lod'}">
+                                <list editable="bottom" create="1" delete="1" string="LOD Budget Lines">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name" required="1"/>
+                                    <field name="line_type" required="1"/>
+                                    <field name="partner_id"/>
+                                    <field name="product_id"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="budgeted_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="actual_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="variance_amount" widget="monetary" options="{'currency_field': 'currency_id'}" 
+                                                optional="show" decoration-success="variance_amount &lt; 0" 
+                                                decoration-danger="variance_amount &gt; 0"
+                                                readonly="1"/>
+                                    <field name="date_actual" optional="hide" string="Date"/>
+                                    <field name="expense_id" optional="show" string="Expense" decoration-expense-submitted="expense_is_submitted"/>
+                                    <field name="state" widget="badge" decoration-success="state == 'done'" decoration-info="state == 'confirmed'" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Budget Tree View -->
+    <record id="omni_mrp_budget_tree" model="ir.ui.view">
+        <field name="name">omni.mrp.budget.tree</field>
+        <field name="model">omni.mrp.budget</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="production_id"/>
+                <field name="state" widget="badge" decoration-success="state == 'closed'" decoration-info="state == 'confirmed'"/>
+                <field name="currency_id" optional="show"/>
+                <field name="total_budgeted_cost" widget="monetary"/>
+                <field name="quotation_price" widget="monetary"/>
+                <field name="total_actual_cost" widget="monetary"/>
+                <field name="quotation_margin" widget="monetary"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Budget Actions -->
+    <record id="action_omni_mrp_budget" model="ir.actions.act_window">
+        <field name="name">Manufacturing Order Budgets</field>
+        <field name="res_model">omni.mrp.budget</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Manufacturing Order Budget!
+            </p>
+            <p>
+                Track your freight operation costs and profitability by service type (FOB, Freight, LOD).
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Items -->
+    <menuitem id="menu_omni_mrp_budget_root" name="Budgets" parent="mrp.menu_mrp_configuration" sequence="100"/>
+    <menuitem id="menu_omni_mrp_budget" name="Manufacturing Order Budgets" parent="menu_omni_mrp_budget_root" action="action_omni_mrp_budget" sequence="10"/>
+</odoo>

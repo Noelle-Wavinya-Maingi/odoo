@@ -73,12 +73,13 @@ class TradingTradePricing(models.Model):
 
 
     # ═══════════════════ CURRENCY CONVERSION ══════════════════════════════
-    @api.depends('price', 'purchase_currency_id', 'currency_id', 'purchase_date','sales_price', 'sale_currency_id', 'sale_order_ids', 'sale_order_ids.state', 'sale_order_ids.order_line', 'sale_order_ids.currency_id')
+    @api.depends('price', 'purchase_currency_id', 'currency_id', 'purchase_date','sales_price', 'sale_currency_id', 'sale_order_ids', 'sale_order_ids.state', 'sale_order_ids.order_line', 'sale_order_ids.currency_id', 'current_price', 'current_price_currency_id')
     def _compute_currency_conversions(self):
         for record in self:
             if not record.currency_id:
                 record.price_in_base_currency = record.price
                 record.sales_price_in_base_currency = record.sales_price
+                record.current_price_in_base_currency = record.currency_price
                 continue
 
             company = record.company_id or self.env.company
@@ -91,20 +92,21 @@ class TradingTradePricing(models.Model):
                 record.price_in_base_currency = record.price
 
             # ── Sales price conversion ─────────────────────────────────────
-            # For long trades with SO lines: check if all SOs use the same currency
-            # If yes and it differs from reporting currency, convert sales_price
-            # using the average rate across SOs for display purposes.
-            # For short trades or manual sales_price: use sale_currency_id directly.
             confirmed_orders = record.sale_order_ids.filtered(lambda so: so.state in ['sale', 'done'])
             so_currencies = set(o.currency_id.id for o in confirmed_orders if o.currency_id)
 
             if confirmed_orders and len(so_currencies) == 1:
                 # All SOs in same currency — convert average_sale_price to base
-                # (average_sale_price is already in reporting currency from
-                # _compute_sales_totals, see trading_trade_pnl.py)
                 record.sales_price_in_base_currency = record.average_sale_price
             elif record.sale_currency_id and record.sale_currency_id != record.currency_id:
                 # Manual sales_price in a foreign currency (short trade pre-agreed price)
                 record.sales_price_in_base_currency = record.sale_currency_id._convert(record.sales_price, record.currency_id, company, conv_date)
             else:
                 record.sales_price_in_base_currency = record.sales_price
+            # Current/market price conversion
+            if record.current_price_currency_id and record.current_price_currency_id != record.currency_id:
+                record.currency_in_base_currency = record.current_price_currency_id._convert(
+                    record.current_price, record.currency_id, company, fields.Date.context_today(record)
+                )
+            else:
+                record.current_price_in_base_currency = record.current_price

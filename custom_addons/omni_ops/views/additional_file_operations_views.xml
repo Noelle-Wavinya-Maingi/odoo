@@ -1,0 +1,117 @@
+<odoo>
+    <!-- Additional File Operations list View -->
+    <record id="additional_file_operations_list_view" model="ir.ui.view">
+        <field name="name">additional.file.operations.list</field>
+        <field name="model">additional.file.operations</field>
+        <field name="arch" type="xml">
+            <list string="Additional Operations" create="1" delete="1" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="operation_title" string="Title"/>
+                <field name="operation_center" string="Work Center" optional="show"/>
+                <field name="service_type" optional="show"/>
+                <field name="actual_duration" widget="float_time" optional="show" string="Actual Duration"/>
+                <field name="state" widget="badge" 
+                       decoration-success="state == 'done'" 
+                       decoration-warning="state == 'progress'" 
+                       decoration-danger="state == 'cancel'"/>
+                <field name="date_start" optional="show"/>
+                <field name="date_finished" optional="show"/>
+            </list>
+        </field>
+        
+    </record>
+
+    <!-- Additional File Operations Form View -->
+    <record id="additional_file_operations_form_view" model="ir.ui.view">
+        <field name="name">additional.file.operations.form</field>
+        <field name="model">additional.file.operations</field>
+        <field name="arch" type="xml">
+            <form string="Additional File Operation">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="operation_title" placeholder="Enter operation title..."/>
+                            <field name="production_id" readonly="1"/>
+                            <field name="operation_center" 
+                                   options="{'no_create': True}"
+                                   placeholder="Select work center from list"/>
+                            <field name="sequence"/>
+                            <field name="service_type"/>
+                        </group>
+                        <group>
+                            <field name="state" widget="badge"/>
+                            <field name="operation_duration" widget="float_time" string="Expected Duration (minutes)"/>
+                            <field name="actual_duration" widget="float_time" string="Actual Duration (minutes)" readonly="1"/>
+                            <field name="date_start"/>
+                            <field name="date_finished"/>
+                        </group>
+                    </group>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_service_start" type="object" string="Start Operation" 
+                                invisible="state in ('progress', 'done', 'cancel')" 
+                                class="oe_stat_button" 
+                                icon="fa-play"/>
+                        <button name="action_service_done" type="object" string="Complete Operation" 
+                                invisible="state != 'progress'" 
+                                class="oe_stat_button" 
+                                icon="fa-check"/>
+                        <button name="action_service_cancel" type="object" string="Cancel Operation" 
+                                invisible="state != 'done'" 
+                                class="oe_stat_button" 
+                                icon="fa-times"/>
+                    </div>
+                    <notebook>
+                        <page string="Description/Instructions">
+                            <field name="operation_description" nolabel="1" 
+                                   placeholder="Enter detailed instructions for this operation..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Additional File Operations Search View -->
+    <record id="additional_file_operations_search_view" model="ir.ui.view">
+        <field name="name">additional.file.operations.search</field>
+        <field name="model">additional.file.operations</field>
+        <field name="arch" type="xml">
+            <search string="Additional File Operations">
+                <field name="operation_title"/>
+                <field name="production_id"/>
+                <field name="operation_center"/>
+                <field name="service_type"/>
+                <field name="state"/>
+                <filter string="Pending" name="pending" domain="[('state', '=', 'pending')]"/>
+                <filter string="In Progress" name="in_progress" domain="[('state', '=', 'progress')]"/>
+                <filter string="Done" name="done" domain="[('state', '=', 'done')]"/>
+                <filter string="FOB" name="fob" domain="[('service_type', '=', 'fob')]"/>
+                <filter string="Freight" name="freight" domain="[('service_type', '=', 'freight')]"/>
+                <filter string="Destination" name="lod" domain="[('service_type', '=', 'lod')]"/>
+                <group>
+                    <filter string="Production Order" name="group_production" domain="[]" context="{'group_by': 'production_id'}"/>
+                    <filter string="Work Center" name="group_workcenter" domain="[]" context="{'group_by': 'operation_center'}"/>
+                    <filter string="Service Type" name="group_service_type" domain="[]" context="{'group_by': 'service_type'}"/>
+                    <filter string="State" name="group_state" domain="[]" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action for Additional File Operations -->
+    <record id="action_additional_file_operations" model="ir.actions.act_window">
+        <field name="name">Additional File Operations</field>
+        <field name="res_model">additional.file.operations</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="additional_file_operations_list_view"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create additional operations for this file
+            </p>
+            <p>
+                Add custom operations specific to this manufacturing order. These operations can be linked to work orders and work centers.
+            </p>
+        </field>
+    </record>
+</odoo>

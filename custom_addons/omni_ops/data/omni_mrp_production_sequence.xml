@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="0">
+    <record id="seq_omni_mrp_production_file" model="ir.sequence">
+        <field name="name">Omnifreight Manufacturing Order (File Number)</field>
+        <field name="code">omni.mrp.production.file</field>
+        <field name="prefix">F%(y)s-%(month)s-</field>
+        <field name="padding">2</field>
+        <field name="use_date_range">True</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>
+

@@ -1,0 +1,108 @@
+<odoo>
+        <record id="menu_manufacturing_root" model="ir.ui.menu">
+            <field name="name">Operations</field>
+        </record>
+
+        <record id="mrp.menu_mrp_root" model="ir.ui.menu">
+            <field name="name">Operations</field>
+        </record>
+
+        <record id="mrp.menu_mrp_manufacturing" model="ir.ui.menu">
+            <field name="name">Operation Orders</field>
+        </record>
+
+
+        <!-- Update list view title -->
+        <record id="mrp_production_tree_view_inherit_custom" model="ir.ui.view">
+            <field name="name">mrp.production.tree.view.inherit.custom</field>
+            <field name="model">mrp.production</field>
+            <field name="inherit_id" ref="mrp.mrp_production_tree_view"/>
+            <field name="arch" type="xml">
+                <list position="attributes">
+                    <attribute name="string">Operation Orders</attribute>
+                </list>
+            </field>
+        </record>
+
+        <!-- Update action window name, path, and help text -->
+        <record id="mrp.mrp_production_action" model="ir.actions.act_window">
+            <field name="name">Operation Orders</field>
+            <field name="path">operations</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No operation order found. Let's create one.
+                </p><p>
+                    Create Operation Orders to manage your freight operations, track cargo movements, and coordinate logistics from pickup to delivery.
+                </p>
+            </field>
+        </record>
+
+        <!-- Rename Manufacturing Orders to Freight Operations -->
+        <record id="mrp.mrp_production_action" model="ir.actions.act_window">
+            <field name="name">Freight Operations</field>
+        </record>
+
+        <!-- Rename Bill of Materials to Process Template -->
+        <record id="mrp.mrp_bom_form_action" model="ir.actions.act_window">
+            <field name="name">Process Templates</field>
+        </record>
+
+        <!-- Rename Manufacturing Orders menu item to Freight Operations -->
+        <record id="mrp.menu_mrp_production_action" model="ir.ui.menu">
+            <field name="name">Freight Operations</field>
+        </record>
+
+        <!-- Rename Bill of Materials menu items to Process Template -->
+        <record id="mrp.menu_mrp_bom_form_action" model="ir.ui.menu">
+            <field name="name">Process Templates</field>
+        </record>
+
+        <!-- Hide Planning menu item -->
+        <record id="mrp.mrp_planning_menu_root" model="ir.ui.menu">
+            <field name="active">False</field>
+        </record>
+
+        <!-- Rename BoM form view fields and labels -->
+        <record id="mrp_bom_form_view_inherit_rename" model="ir.ui.view">
+            <field name="name">mrp.bom.form.view.inherit.rename</field>
+            <field name="model">mrp.bom</field>
+            <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+            <field name="arch" type="xml">
+                <!-- Rename BoM Overview button to Template Overview -->
+                <xpath expr="//button[@name='%(mrp.action_report_mrp_bom)d']//span[hasclass('o_stat_text')]" position="replace">
+                    <span class="o_stat_text">Template Overview</span>
+                </xpath>
+                
+                <!-- Rename Product field to Service -->
+                <xpath expr="//field[@name='product_tmpl_id']" position="attributes">
+                    <attribute name="string">Service</attribute>
+                </xpath>
+                
+                <!-- Rename BoM Type field to Process Type -->
+                <xpath expr="//field[@name='type']" position="attributes">
+                    <attribute name="string">Process Type</attribute>
+                </xpath>
+                
+                <!-- Rename Manufacturing Readiness to Operations Readiness -->
+                <xpath expr="//field[@name='ready_to_produce']" position="attributes">
+                    <attribute name="string">Operations Readiness</attribute>
+                </xpath>
+                
+                <!-- Rename Manuf. Lead Time to Operations Lead Time -->
+                <xpath expr="//label[@for='produce_delay']" position="replace">
+                    <label for="produce_delay" string="Operations Lead Time"/>
+                </xpath>
+                
+                <!-- Rename Days to prepare Manufacturing Order to Days to prepare Operations Order -->
+                <xpath expr="//label[@for='days_to_prepare_mo']" position="replace">
+                    <label for="days_to_prepare_mo" string="Days to prepare Operations Order"/>
+                </xpath>
+                
+                <!-- Rename Operations Performance button -->
+                <xpath expr="//button[@name='%(mrp.action_mrp_routing_time)d']//span[hasclass('o_stat_text')]" position="replace">
+                    <span class="o_stat_text">Operations<br/>Performance</span>
+                </xpath>
+            </field>
+        </record>
+
+</odoo>

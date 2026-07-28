@@ -97,7 +97,7 @@ class SetQuote(models.AbstractModel):
                 vals = {
                     'product_id': freight_product.id,
                     'product_uom_qty': self.no_of_containers,
-                    'product_uom': freight_product.uom_id.id,
+                    'product_uom_id': freight_product.uom_id.id,
                     'price_unit': calculated_prices[i],
                     'name': line_name,
                 }
@@ -109,7 +109,7 @@ class SetQuote(models.AbstractModel):
             vals = {
                 'product_id': freight_product.id,
                 'product_uom_qty': self.no_of_containers,
-                'product_uom': freight_product.uom_id.id,
+                'product_uom_id': freight_product.uom_id.id,
                 'price_unit': self.full_service_cost/self.no_of_containers or 0.0,
                 'name': line_name,
             }
@@ -151,7 +151,7 @@ class SetQuote(models.AbstractModel):
             fob_freight_vals = {
                 'product_id': freight_product.id,
                 'product_uom_qty': self.no_of_containers,
-                'product_uom': freight_product.uom_id.id,
+                'product_uom_id': freight_product.uom_id.id,
                 'price_unit': fob_freight_price,
                 'name': fob_freight_line_name,
             }
@@ -164,7 +164,7 @@ class SetQuote(models.AbstractModel):
             lod_vals = {
                 'product_id': freight_product.id,
                 'product_uom_qty': self.no_of_containers,
-                'product_uom': freight_product.uom_id.id,
+                'product_uom_id': freight_product.uom_id.id,
                 'price_unit': lod_price,
                 'name': lod_line_name,
             }

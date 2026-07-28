@@ -17,7 +17,7 @@
 
     # Dependencies
     'depends': [
-        'base', 'stock', 'sale', 'purchase'
+        'base', 'stock', 'sale', 'purchase', 'operations', 'hr_expense'
     ],
 
     # Data files loaded at installation
@@ -27,12 +27,16 @@
         'data/sequence.xml',
 
         'views/trading_trade_views.xml',
+        # 'views/trading_trade_budget_views.xml',
         'views/menu.xml',
         'views/trading_futures_views.xml',
         'views/purchase_order.xml',
         'views/stock_views.xml',
         'views/sale_view.xml',
         'views/account_move_line_view.xml',
+        'views/product_template.xml',
+        # 'views/hr_expense_views.xml',
+        'views/res_config_settings_view.xml',
     ],
 
     # Demo data (optional, can be omitted if not needed)

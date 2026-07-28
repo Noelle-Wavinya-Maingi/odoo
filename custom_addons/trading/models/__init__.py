@@ -11,3 +11,7 @@ from . import trading_trade_pricing
 from . import trading_trade_pnl
 from . import trading_trade_stock
 from . import trading_trade_actions
+from . import product_template
+from . import trading_trade_margin
+# from . import hr_expense
+from . import res_config_settings

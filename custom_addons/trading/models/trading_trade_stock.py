@@ -1,4 +1,7 @@
+import logging
 from odoo import models, fields, api
+
+_logger = logging.getLogger(__name__)
 
 
 class TradingTradeStock(models.Model):
@@ -35,6 +38,7 @@ class TradingTradeStock(models.Model):
                     quant_qty = sum(lot.quant_ids.filtered(lambda q: q.location_id.usage == 'internal').mapped('quantity'))
                     total_qty += quant_qty
             record.on_hand_quantity = total_qty
+            _logger.info(f"📦 {record.name}: on_hand_quantity = {record.on_hand_quantity} " f"from lots {[lot.name for lot in record.lot_ids]}")
 
     @api.depends('lot_ids')
     def _compute_lot_count(self):

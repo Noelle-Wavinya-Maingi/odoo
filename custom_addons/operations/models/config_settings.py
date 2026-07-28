@@ -175,6 +175,7 @@ class ResConfigSettings(models.TransientModel):
             elif self.company_industry == 'manufacturing':
                 self.install_manufacturing = True
                 self.install_trading = True
+
     def execute(self):
         """Override execute to handle module installation"""
         # Get the current values before saving
@@ -204,8 +205,25 @@ class ResConfigSettings(models.TransientModel):
             params.set_param('operations.manufacturing_module_installed', True)
 
         if modules_to_install:
-            self._install_modules(modules_to_install)
-        
+            _logger.info(f"📦 New modules to install this save: {modules_to_install}")
+            # NOTE: renamed from _install_modules -> _install_operations_modules.
+            # Odoo's own core res.config.settings class defines a REAL internal
+            # method literally called `_install_modules(self, modules)` -- but
+            # its signature expects an ir.module.module RECORDSET, not a list of
+            # plain strings. Because this class previously defined a method of
+            # the exact same name, it silently overrode/shadowed that core
+            # method for the ENTIRE res.config.settings model -- meaning every
+            # module_<name> Boolean field anywhere in the system (not just this
+            # module's own install_shipping/install_trading/install_manufacturing)
+            # had its real installation hijacked by this incompatible override,
+            # which then crashed trying to iterate a recordset as if it were a
+            # list of strings ("sequence item 0: expected str instance,
+            # ir.module.module found"), and silently swallowed the error.
+            # Renaming this method removes the collision entirely, restoring
+            # core's real _install_modules for every other module_ field.
+            self._install_operations_modules(modules_to_install)
+        else:
+            _logger.info("ℹ️ No new modules to install — skipping")
         return result
     
     def set_values(self):
@@ -245,8 +263,13 @@ class ResConfigSettings(models.TransientModel):
         })
         return res
     
-    def _install_modules(self, module_names):
-        """Install modules by name - matches base method signature"""
+    def _install_operations_modules(self, module_names):
+        """Install modules by name (list of plain string technical names).
+
+        Renamed from `_install_modules` -- see the comment in execute() above
+        for why the old name collided with a real Odoo core method and must
+        never be reused for this custom, string-based helper.
+        """
         try:
             # Define dependencies that must be installed before each module
             dependency_map = {
@@ -265,6 +288,7 @@ class ResConfigSettings(models.TransientModel):
                 if module_name not in ordered_modules:
                     ordered_modules.append(module_name)
 
+            _logger.info("📦 Install order: %s", ordered_modules)
 
             # Install in batches — dependencies first, then main modules
             for module_name in ordered_modules:
@@ -274,7 +298,9 @@ class ResConfigSettings(models.TransientModel):
                 ], limit=1)
 
                 if module:
+                    _logger.info("⬇️ Installing: %s", module_name)
                     module.button_immediate_install()
+                    _logger.info("✅ Installed: %s", module_name)
                 else:
                     _logger.info("⏭️ Already installed or not found: %s", module_name)
 

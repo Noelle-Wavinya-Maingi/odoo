@@ -1,0 +1,41 @@
+<odoo>
+    <record id="view_mrp_production_form_inherit_documents" model="ir.ui.view">
+        <field name="name">mrp.production.form.documents</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="omni_ops.omni_mrp_production_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='components']" position="after">
+                <page string="Documents" name="documents" invisible="bom_type != 'service'">
+                    <field name="document_ids" nolabel="1" context="{'default_production_id': id}" options="{'no_create': False, 'no_open': False}">
+                        <list>
+                            <field name="filename"/>
+                            <field name="operation_id" domain="[('bom_id', '=', parent.bom_id)]"/>
+                            <field name="workcenter_id" optional="show"/>
+                            <field name="is_done" widget="boolean_toggle"/>
+                            <!-- <field name="done_date" optional="show"/>
+                            <field name="done_by" optional="show"/> -->
+                            <field name="user_id"/>
+                            <field name="upload_date" readonly="1"/>
+                            <button name="action_mark_done" type="object" string="Mark Done" invisible="is_done" style="background-color: #4CAF50; color: white;"/>
+                            <button name="action_mark_undone" type="object" string="Mark Undone" invisible="not is_done" style="background-color: #f44336; color: white;"/>
+                        </list>
+                        <form create="true" edit="true" delete="true">
+                            <group>
+                                <field name="document_upload" widget="binary" filename="filename"/>
+                                <field name="filename" invisible="1"/>
+                                <field name="production_id" invisible="1"/>
+                                <field name="operation_id" domain="[('bom_id', '=', parent.bom_id)]"/>
+                                <field name="workcenter_id" readonly="1"/>
+                                <field name="is_done" widget="boolean_toggle"/>
+                                <!-- <field name="done_date" readonly="1"/>
+                                <field name="done_by" readonly="1"/> -->
+                                <field name="user_id" readonly="1"/>
+                                <field name="upload_date" readonly="1"/>
+                            </group>
+                        </form>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

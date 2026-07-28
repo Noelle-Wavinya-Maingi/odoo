@@ -106,6 +106,7 @@ class TradingTrade(models.Model):
         'product.product',
         string='Product',
         required=True,
+        domain="[('product_tmpl_id.is_tradeable', '=', True)]",
         help="Product associated with this trade"
     )
     
@@ -119,11 +120,28 @@ class TradingTrade(models.Model):
     # Purchase Order linked to this trade
     purchase_id = fields.Many2one('purchase.order', string='Purchase Order', ondelete='set null')
     
-    current_price = fields.Float(
+    # NOTE: Monetary fields take their decimal precision from the linked
+    # currency, not a 'digits' kwarg -- Float is the only field type that
+    # accepts 'digits' directly. Passing it here is a no-op that Odoo 19
+    # warns about on every load.
+    current_price = fields.Monetary(
         string='Current/Market Price',
-        help='Current market price for unrealized P&L calculation',
-        digits=(16, 2),
+        currency_field='current_price_currency_id',
+        help='Current market price for unrealized P&L calculation, in its own currency.',
         tracking=True
+    )
+    
+    current_price_currency_id = fields.Many2one(
+        'res.currency',
+        string="Market Price Currency",
+        default=lambda self: self.env.company.currency_id
+    )
+    
+    current_price_in_base_currency = fields.Monetary(
+        string="Current/Market Price (Reporting Currency)",
+        compute="_compute_currency_conversions",
+        store=True,
+        currency_field='currency_id',
     )
     
     additional_costs = fields.Float(
@@ -137,7 +155,24 @@ class TradingTrade(models.Model):
     )
     
     invoice_ids = fields.One2many('account.move', 'trade_id', string='Invoices')
-    
+
+    # NOTE: Trade Budgets (budget_ids, budget_id, budget_state,
+    # action_create_budget, action_view_budget) are an OPTIONAL feature and
+    # deliberately do NOT live here. Core trading has no dependency on
+    # 'trading.trade.budget' at all -- that model, and every field/method
+    # referencing it, lives in the separate 'trading_budget' bridge module
+    # (see trading_budget/models/trading_trade.py, an _inherit extension of
+    # this same model), so that Trade Budgets can be installed/uninstalled
+    # independently of Trading itself.
+    #
+    # has_budget IS kept here, but as a plain non-computed field defaulting
+    # to False -- this is a stub purely so that trading_trade_views.xml's
+    # invisible="has_budget" conditions (on cards that fall back to showing
+    # unconditionally when no budget exists) always validate, even if
+    # 'trading_budget' is never installed. 'trading_budget' overrides this
+    # same field, turning it into a real compute based on budget_ids.
+    has_budget = fields.Boolean('Has Budget', default=False)
+
     product_uom = fields.Many2one(
         string="Unit of Measure",
         related="product_id.uom_id",
@@ -148,7 +183,7 @@ class TradingTrade(models.Model):
     # ═══════════════════ KANBAN/LIST GROUP ORDER ═════════════════════════
     @api.model
     def _group_expand_status(self, states, domain):
-        """Force kanban/list group-by columns to follow the declared selection order (Draft, Confirmed, Closed) instead of the default alphabetical fallback ('closed' < 'confirmed' < 'draft')."""
+        """Force kanban/list group-by columns to follow the declared selection order (Draft, Confirmed, Closed) instead of the defaultalphabetical fallback ('closed' < 'confirmed' < 'draft')."""
         return [key for key, _label in self._fields['status'].selection]
 
     # ═══════════════════ CRUD / WORKFLOW ══════════════════════════════════
@@ -189,6 +224,23 @@ class TradingTrade(models.Model):
             self._compute_all_trade_fields()
         
         return result
+
+    def _sync_budget_line_for_move(self, move, field_name, amount):
+        """No-op by default -- overridden by 'trading_budget' if installed.
+
+        account_move_lifecycle.py calls this unconditionally whenever a
+        move's contribution to additional_costs/additional_revenue changes,
+        regardless of whether the optional Trade Budget feature is present.
+        Keeping a harmless no-op here means core Trading never breaks if
+        'trading_budget' isn't installed; the bridge module's _inherit
+        override supplies the real budget-line-syncing behavior.
+        """
+        return
+
+    def _remove_budget_line_for_move(self, move):
+        """No-op by default -- overridden by 'trading_budget' if installed.
+        See _sync_budget_line_for_move for why this stub exists in core."""
+        return
 
     def _compute_all_trade_fields(self):
         """Trigger recomputation of all computed fields."""

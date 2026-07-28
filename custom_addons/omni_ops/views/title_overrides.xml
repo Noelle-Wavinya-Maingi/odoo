@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 1. Change BoM landing page help text to reflect freight process template -->
+    <record id="mrp.mrp_bom_form_action" model="ir.actions.act_window">
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No freight process template found. Let's create one!
+            </p><p>
+                Freight process templates allow you to define the list of required service operations 
+                used to process a freight shipment; through an operation order or a pack of products.
+            </p>
+        </field>
+    </record>
+
+    <!-- 2. In list view: Rename "Product" to "Service" -->
+    <record id="view_mrp_bom_tree_rename_product" model="ir.ui.view">
+        <field name="name">mrp.bom.tree.rename.product</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="product_tmpl_id" position="attributes">
+                <attribute name="string">Service</attribute>
+            </field>
+        </field>
+    </record>
+
+    <!-- 3. In list view: Rename "BoM Type" to "Process Template" -->
+    <record id="view_mrp_bom_tree_rename_type" model="ir.ui.view">
+        <field name="name">mrp.bom.tree.rename.type</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="type" position="attributes">
+                <attribute name="string">Process Template</attribute>
+            </field>
+        </field>
+    </record>
+
+    <!-- 4. In form view: Hide normal and phantom options, show only service, and hide Kit explanation -->
+    <record id="view_mrp_bom_form_hide_process_types" model="ir.ui.view">
+        <field name="name">mrp.bom.form.hide.process.types</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Hide normal and phantom options, show only service -->
+            <field name="type" position="attributes">
+                <attribute name="widget">filterable_selection</attribute>
+                <attribute name="options">{'blacklisted_values': ['normal', 'phantom']}</attribute>
+            </field>
+            <!-- Hide the Kit explanation paragraph.
+                 NOTE (Odoo 19 migration): core renamed this paragraph's class from
+                 "oe_grey oe_edit_only" to "opacity-50 oe_edit_only", and it also carries
+                 a colspan="2" attribute now — the xpath match must be exact on all of these
+                 or Odoo raises "cannot be located in parent view". -->
+            <p colspan="2" class="opacity-50 oe_edit_only" invisible="type != 'phantom'" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </p>
+        </field>
+    </record>
+
+</odoo>

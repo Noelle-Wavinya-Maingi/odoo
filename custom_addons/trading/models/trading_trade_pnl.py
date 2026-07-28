@@ -1,4 +1,7 @@
+import logging
 from odoo import models, fields, api
+
+_logger = logging.getLogger(__name__)
 
 
 class TradingTradePnl(models.Model):
@@ -113,6 +116,7 @@ class TradingTradePnl(models.Model):
 
             if has_purchase_doc and not has_sale_docs:
                 open_qty = record.quantity
+                _logger.warning(f"   → Only purchase: LONG position of {open_qty}")
             elif has_sale_docs and not has_purchase_doc:
                 open_qty = -record.total_sold_quantity
             elif has_purchase_doc and has_sale_docs:
@@ -163,6 +167,7 @@ class TradingTradePnl(models.Model):
                     sale_price_to_use = (record.sales_price_in_base_currency if record.sales_price_in_base_currency > 0 else record.average_sale_price)
                     if sale_price_to_use > 0:
                         record.unrealized_pnl = open_qty * (sale_price_to_use - record.current_price)
+                        _logger.info(f"   SHORT Unrealized P&L: {open_qty} * " f"({sale_price_to_use} - {record.current_price}) = {record.unrealized_pnl}")
                     else:
                         record.unrealized_pnl = 0.0
             elif record.open_position_quantity != 0:
@@ -178,6 +183,7 @@ class TradingTradePnl(models.Model):
             # TOTAL P&L
             record.total_pnl = record.realized_pnl + record.unrealized_pnl + record.additional_revenue
 
+            _logger.debug(f"   💰 TOTAL P&L = {record.total_pnl} " f"(realized={record.realized_pnl} + unrealized={record.unrealized_pnl} " f"+ additional_revenue={record.additional_revenue}) " f"[{record.currency_id.name if record.currency_id else 'N/A'}]")
 
             # P&L PERCENTAGE
             if record.trade_type == 'long':
@@ -211,6 +217,7 @@ class TradingTradePnl(models.Model):
                         line_value = line.price_unit * qty
                         if order_currency != record.currency_id:
                             line_value = order_currency._convert(line_value, record.currency_id, company, rate_date)
+                            _logger.info(f"💱 {record.name}: Sale line converted " f"({order_currency.name} → {record.currency_id.name} at {rate_date})")
                         total_qty += qty
                         total_value += line_value
 
@@ -218,6 +225,7 @@ class TradingTradePnl(models.Model):
             record.total_sales_value = total_value
             record.average_sale_price = total_value / total_qty if total_qty > 0 else 0.0
 
+            _logger.info(f"📊 {record.name}: Sales — Qty: {total_qty}, " f"Value: {total_value} {record.currency_id.name if record.currency_id else ''}, " f"Avg: {record.average_sale_price}")
 
     @api.depends('quantity', 'price_in_base_currency', 'total_sold_quantity')
     def _compute_costs(self):

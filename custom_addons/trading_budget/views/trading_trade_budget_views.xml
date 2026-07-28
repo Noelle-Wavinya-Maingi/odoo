@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Budget Form View -->
+    <record id="trading_trade_budget_form" model="ir.ui.view">
+        <field name="name">trading.trade.budget.form</field>
+        <field name="model">trading.trade.budget</field>
+        <field name="arch" type="xml">
+            <form string="Trade Budget">
+                <header>
+                    <button name="action_confirm" string="Confirm" type="object"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_close" string="Close" type="object"
+                            class="btn-secondary" invisible="state not in ('confirmed',)"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,closed"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="trade_id" readonly="1"/>
+                            <field name="trade_type" invisible="1"/>
+                            <field name="is_fully_matched" invisible="1"/>
+                            <field name="currency_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="company_id" readonly="1" groups="base.group_multi_company"/>
+                            <field name="analytic_account_id"/>
+                        </group>
+                    </group>
+
+                    <!-- Cumulative Summary -->
+                    <div class="row mt-3 mb-3">
+                        <div class="col-12 col-lg-6">
+                            <div class="card" style="border-left: 4px solid #dc3545;">
+                                <div class="card-header" style="background-color: #f8d7da;">
+                                    <h5><i class="fa fa-arrow-circle-down"/> Cost</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-2">
+                                        <div class="col-6 text-center">
+                                            <span style="display:block; font-size:11px; color:#6c757d; font-weight:bold;" invisible="trade_type != 'long'">Budgeted Cost</span>
+                                            <span style="display:block; font-size:11px; color:#6c757d; font-weight:bold;" invisible="trade_type == 'long'">Target Cost</span>
+                                            <field name="total_budgeted_cost" widget="monetary" readonly="1" nolabel="1" class="fw-bold"/>
+                                        </div>
+                                        <div class="col-6 text-center">
+                                            <strong style="display:block; font-size:11px; color:#6c757d;">Actual Cost</strong>
+                                            <field name="actual_cost" widget="monetary" readonly="1" nolabel="1" class="fw-bold"/>
+                                        </div>
+                                        <div class="col-12 text-center mt-2">
+                                            <span invisible="not is_fully_matched" style="display:block; font-size:11px; color:#6c757d; font-weight:bold;">Variance</span>
+                                            <field name="cost_variance" widget="monetary" readonly="1" nolabel="1"
+                                                   class="fw-bold"
+                                                   invisible="not is_fully_matched"
+                                                   decoration-success="cost_variance &lt;= 0"
+                                                   decoration-danger="cost_variance &gt; 0"/>
+                                            <span invisible="is_fully_matched" style="display:block; font-size:12px; color:#adb5bd; font-style:italic;">
+                                                Trade still open — variance not yet meaningful
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6">
+                            <div class="card" style="border-left: 4px solid #198754; margin-bottom:1rem;">
+                                <div class="card-header" style="background-color: #d1e7dd;">
+                                    <h5><i class="fa fa-arrow-circle-up"/> Revenue</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-2">
+                                        <div class="col-6 text-center">
+                                            <span style="display:block; font-size:11px; color:#6c757d; font-weight:bold;" invisible="trade_type != 'short'">Budgeted Revenue</span>
+                                            <span style="display:block; font-size:11px; color:#6c757d; font-weight:bold;" invisible="trade_type == 'short'">Target Revenue</span>
+                                            <field name="total_budgeted_revenue" widget="monetary" readonly="1" nolabel="1" class="fw-bold"/>
+                                        </div>
+                                        <div class="col-6 text-center">
+                                            <strong style="display:block; font-size:11px; color:#6c757d;">Actual Revenue</strong>
+                                            <field name="actual_revenue" widget="monetary" readonly="1" nolabel="1" class="fw-bold"/>
+                                        </div>
+                                        <div class="col-12 text-center mt-2">
+                                            <span invisible="not is_fully_matched" style="display:block; font-size:11px; color:#6c757d; font-weight:bold;">Variance</span>
+                                            <field name="revenue_variance" widget="monetary" readonly="1" nolabel="1"
+                                                   class="fw-bold"
+                                                   invisible="not is_fully_matched"
+                                                   decoration-success="revenue_variance &gt;= 0"
+                                                   decoration-danger="revenue_variance &lt; 0"/>
+                                            <span invisible="is_fully_matched" style="display:block; font-size:12px; color:#adb5bd; font-style:italic;">
+                                                Trade still open — variance not yet meaningful
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-3" style="border-left: 4px solid #6f42c1; margin-bottom:1rem;">
+                        <div class="card-header" style="background-color: #ede7f6;">
+                            <h5 class="mb-0"><i class="fa fa-bullseye me-1"/> Margin Target</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col text-center">
+                                    <strong style="display:block; font-size:11px; color:#6c757d;">Target Margin %</strong>
+                                    <field name="target_margin_percent" readonly="1" nolabel="1" class="fw-bold"/>
+                                </div>
+                                <div class="col text-center">
+                                    <strong style="display:block; font-size:11px; color:#6c757d;">Target P&amp;L</strong>
+                                    <field name="target_pnl" widget="monetary" readonly="1" nolabel="1" class="fw-bold"/>
+                                </div>
+                                <div class="col text-center">
+                                    <strong style="display:block; font-size:11px; color:#6c757d;">Realized Margin</strong>
+                                    <field name="total_pnl" widget="monetary" readonly="1" nolabel="1" class="fw-bold"
+                                           decoration-success="total_pnl &gt; 0" decoration-danger="total_pnl &lt; 0"/>
+                                </div>
+                                <div class="col text-center">
+                                    <span invisible="not is_fully_matched" style="display:block; font-size:11px; color:#6c757d; font-weight:bold;">Variance</span>
+                                    <field name="margin_pnl_variance" widget="monetary" readonly="1" nolabel="1" class="fw-bold"
+                                           invisible="not is_fully_matched"
+                                           decoration-success="margin_pnl_variance &gt; 0" decoration-danger="margin_pnl_variance &lt; 0"/>
+                                    <span invisible="is_fully_matched" style="display:block; font-size:12px; color:#adb5bd; font-style:italic;">not yet meaningful</span>
+                                </div>
+                                <div class="col text-center">
+                                    <span invisible="not is_fully_matched" style="display:block; font-size:11px; color:#6c757d; font-weight:bold;">Variance %</span>
+                                    <field name="margin_pnl_variance_percent" readonly="1" nolabel="1" class="fw-bold"
+                                           invisible="not is_fully_matched"
+                                           decoration-success="margin_pnl_variance_percent &gt; 0" decoration-danger="margin_pnl_variance_percent &lt; 0"/>
+                                    <span invisible="is_fully_matched" style="display:block; font-size:12px; color:#adb5bd; font-style:italic;">not yet meaningful</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div><br/>
+
+                    <!-- Budget Lines -->
+                     <h4 style="text-align:center;">Additional Costs &amp; Additional Revenue</h4> <hr/>
+                    <field name="budget_line_ids" context="{'default_budget_id': id}" readonly="state == 'closed'">
+                        <list editable="bottom" create="1" delete="1" string="Budget Lines" decoration-bf="display_type == 'line_section'">
+                            <field name="sequence" widget="handle"/>
+                            <!-- <field name="display_type" column_invisible="True"/> -->
+                            <field name="name" required="1" decoration-bf="display_type == 'line_section'"/>
+                            <field name="source_reference" string="Source" invisible="display_type"/>
+                            <field name="line_type" required="not display_type" widget="tags" invisible="display_type"/>
+                            <field name="partner_id" invisible="display_type"/>
+                             <field name="date_actual" optional="hide" string="Date" invisible="display_type"/>
+                            <field name="currency_id" column_invisible="True"/>
+                            
+                            <!-- <field name="section_subtotal" widget="monetary" options="{'currency_field': 'currency_id'}" invisible="display_type != 'line_section'" class="fw-bold"/> -->
+                            
+                           
+                            <field name="actual_amount" widget="monetary" options="{'currency_field': 'currency_id'}" string="Amount" invisible="display_type"/>
+                            <control>
+                                <create string="Add a line"/>
+                                <!-- <create string="Add a section" context="{'default_display_type': 'line_section'}"/> -->
+                            </control>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Budget Tree View -->
+    <record id="trading_trade_budget_tree" model="ir.ui.view">
+        <field name="name">trading.trade.budget.tree</field>
+        <field name="model">trading.trade.budget</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="trade_id"/>
+                <field name="state" widget="badge" decoration-success="state == 'closed'" decoration-info="state == 'confirmed'"/>
+                <field name="currency_id" optional="show"/>
+                <field name="total_budgeted_cost" widget="monetary"/>
+                <field name="actual_cost" widget="monetary"/>
+                <field name="total_budgeted_revenue" widget="monetary"/>
+                <field name="actual_revenue" widget="monetary"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Budget Action -->
+    <record id="action_trading_trade_budget" model="ir.actions.act_window">
+        <field name="name">Trade Budgets</field>
+        <field name="res_model">trading.trade.budget</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a budget from a trade's Budget tab.
+            </p>
+        </field>
+    </record>
+</odoo>

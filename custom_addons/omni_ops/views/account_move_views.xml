@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_move_form_peppol_custom_workflow" model="ir.ui.view">
+            <field name="name">account.move.form.peppol.custom.workflow</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form" />
+            <field name="arch" type="xml">
+
+                <!-- Add button in header next to existing buttons -->
+                <xpath expr="//header//button[@name='action_post']" position="before">
+                    <button
+                        name="action_send_for_validation_wizard"
+                        type="object"
+                        string="Send for Validation"
+                        class="btn-primary"
+                        invisible="status in ['awaiting_validation', 'validated', 'posted', 'cancel', 'rejected'] or move_type not in ['in_invoice', 'in_refund']"
+                    />
+                    <button
+                        name="action_duplicate_bill_line"
+                        type="object"
+                        string="Duplicate Line"
+                        class="btn-primary"
+                        invisible="status in ['awaiting_validation', 'validated', 'posted', 'cancel', 'rejected'] or move_type not in ['in_invoice', 'in_refund']"
+                    />
+                    <button
+                        name="action_open_validation_confirm_wizard"
+                        type="object"
+                        string="Mark as Validated"
+                        class="btn-primary"
+                        invisible="status != 'awaiting_validation' or move_type not in ['in_invoice', 'in_refund']"
+                    />
+                    <button
+                        name="action_reject_wizard"
+                        type="object"
+                        string="Reject"
+                        class="btn-danger"
+                        invisible="status != 'awaiting_validation' or move_type not in ['in_invoice', 'in_refund']"
+                    />
+                </xpath>
+
+                <xpath expr="//field[@name='state']" position="attributes">
+                    <attribute name="invisible">move_type in ['in_invoice', 'in_refund']</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='state']" position="after">
+                    <field name="status"
+                        statusbar_visible="draft,awaiting_validation,validated,posted"
+                        widget="statusbar"
+                        options="{'clickable': '1'}"
+                        invisible="move_type not in ['in_invoice', 'in_refund']"
+                        string="Draft Status"
+                    />
+                </xpath>
+                <xpath expr="//page//group[@name='accounting_info_group']" position="after">
+                    <group name="shipment_details" string="Shipment Details">
+                        <field name="sale_order_ref" invisible="1" />
+                        <label for="no_of_containers" string="Qty x Package" />
+                        <div class="o_row g-0 d-flex">
+                            <field name="no_of_containers" readonly="0" />
+                            <span style="font-weight: bold; padding: 10px;">×</span>
+                            <field name="container_size" readonly="0" />
+                        </div>
+                        <field name="marks" />
+                        <field name="goods_description" />
+                        <field name="port_of_loading" readonly="0" />
+                        <field name="port_of_dispatch" readonly="0" />
+                        <field name="loading_date" />
+                        <field name="vessel" />
+                    </group>
+                </xpath>
+                <xpath expr="//page//group//field[@name='ref']" position="after">
+                    <field name="file_number" />
+                </xpath>
+
+            </field>
+        </record>
+
+        <record id="view_account_move_validation_wizard_form" model="ir.ui.view">
+            <field name="name">account.move.validation.wizard.form</field>
+            <field name="model">account.move.validation.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Send for Validation">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="move_id" invisible="1" />
+                                <field name="is_validation_confirm_mode" invisible="1" />
+                                <field name="validation_type" widget="radio"
+                                    options="{'horizontal': true}"
+                                    invisible="is_validation_confirm_mode" />
+
+                                <!-- Show user selection only when management is selected -->
+                                <field name="management_user_id"
+                                    invisible="validation_type != 'management' or is_validation_confirm_mode"
+                                    required="validation_type == 'management'"
+                                    placeholder="Select a user to notify" />
+                                <field name="note" invisible="is_validation_confirm_mode" />
+                            </group>
+                            <group>
+                                <div class="alert alert-info" role="alert"
+                                    invisible="validation_type != 'management' or is_validation_confirm_mode">
+                                    <strong>Management Validation:</strong>
+                                    <ul>
+                                        <li>Bill status will change to "Awaiting Validation"</li>
+                                        <li>Selected user will be notified with a task</li>
+                                        <li>User can later "Mark as Validated"</li>
+                                    </ul>
+                                </div>
+                                <div class="alert alert-warning" role="alert"
+                                    invisible="validation_type != 'operations' or is_validation_confirm_mode">
+                                    <strong>Operations Validation:</strong>
+                                    <ul>
+                                        <li>An expense will be created from this bill</li>
+                                        <li>Bill status will change to "Awaiting Validation"</li>
+                                        <li>Expense will be sent to operations team for approval</li>
+                                        <li>Operations team approves expense → bill gets validated</li>
+                                    </ul>
+                                </div>
+                            </group>
+                        </group>
+                        <div invisible="not is_validation_confirm_mode" class="p-2">
+                            <p class="text-muted mb-3">Are you sure you want to mark this bill as validated?</p>
+                            <div invisible="not previous_notes" class="rounded border-start border-2 border-secondary p-3 bg-secondary">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="fa fa-sticky-note text-primary" title="Request Notes"/>
+                                    <strong class="text-secondary-emphasis">Request Notes</strong>
+                                </div>
+                                <field name="previous_notes" readonly="1" nolabel="1" class="text-body fst-italic"/>
+                            </div>
+                            <div class="o_field_widget mt-3" style="display: flex; align-items: flex-start; gap: 8px;">
+                                <label for="note" string="Add a Note" style="white-space: nowrap; padding-top: 6px;"/>
+                                <field name="note" placeholder="Add a note to log with the validation request" widget="char_emojis" style="flex: 1;"/>
+                            </div>
+                        </div>
+                    </sheet>
+                    <footer>
+                        <button name="action_confirm" string="Confirm" type="object"
+                            class="btn-primary" />
+                        <button string="Cancel" class="btn-secondary" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_account_move_validation_wizard" model="ir.actions.act_window">
+            <field name="name">Send for Validation</field>
+            <field name="res_model">account.move.validation.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="binding_model_id" ref="account.model_account_move" />
+            <field name="context">{'default_move_id': active_id}</field>
+        </record>
+
+        <record id="view_account_move_rejection_wizard_form" model="ir.ui.view">
+            <field name="name">account.move.rejection.wizard.form</field>
+            <field name="model">account.move.rejection.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Reject Bill">
+                    <sheet>
+                        <group>
+                            <field name="move_id" invisible="1" />
+                            <field name="rejection_reason" widget="textarea" />
+                        </group>
+                        <div class="alert alert-warning" role="alert">
+                            <strong>Warning:</strong> The rejection reason will be logged in the
+                            bill's activity log and cannot be removed. </div>
+                    </sheet>
+                    <footer>
+                        <button name="action_confirm" string="Confirm Rejection" type="object"
+                            class="btn-danger" />
+                        <button string="Cancel" class="btn-secondary" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_account_move_rejection_wizard" model="ir.actions.act_window">
+            <field name="name">Reject Bill</field>
+            <field name="res_model">account.move.rejection.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="binding_model_id" ref="account.model_account_move" />
+        </record>
+
+    </data>
+</odoo>
