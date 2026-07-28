@@ -21,9 +21,17 @@ class SaleOrder(models.Model):
 
         for order in self:
             if not order.trade_id:
+                # Only lines whose product is flagged as a trade product feed the
+                # trade — ordinary sales (services, supplies, non-traded goods)
+                # should never spawn a trade.
+                trade_lines = order.order_line.filtered(lambda l: l.product_id.is_tradeable)
+                if not trade_lines:
+                    _logger.info(f"No trade products on sale order {order.name}, skipping trade creation.")
+                    continue
+
                 # If no trade selected, try to create one
                 _logger.info(f"📝 No trade selected for sale order {order.name}, checking if trade needs to be created...")
-                total_qty = sum(order.order_line.mapped('product_uom_qty'))
+                total_qty = sum(trade_lines.mapped('product_uom_qty'))
                 if total_qty > 0:
                     trade = self._create_trade_from_sale_order(order)
                     if trade:
@@ -42,8 +50,13 @@ class SaleOrder(models.Model):
             # Recompute all trade calculations
             trade._compute_all_trade_fields()
             
-            # Check if trade should be closed based on quantity
-            total_sold_qty = sum(trade.sale_order_ids.filtered(lambda so: so.state in ['sale', 'done']).mapped('order_line.product_uom_qty'))
+            # Check if trade should be closed based on quantity — scoped to
+            # lines matching this trade's product, in case a linked SO also
+            # carries non-trade or other-product lines
+            confirmed_sos = trade.sale_order_ids.filtered(lambda so: so.state in ['sale', 'done'])
+            total_sold_qty = sum(
+                confirmed_sos.mapped('order_line').filtered(lambda l: l.product_id == trade.product_id).mapped('product_uom_qty')
+            )
             if total_sold_qty >= trade.quantity:
                 _logger.info(f"🏁 Trade {trade.name} fully sold ({total_sold_qty}/{trade.quantity}), closing...")
                 trade.write({'status': 'closed'})
@@ -73,11 +86,12 @@ class SaleOrder(models.Model):
     def _create_trade_from_sale_order(self, order):
         """Create a new trade from a sale order"""
         try:
-            total_qty = sum(order.order_line.mapped('product_uom_qty'))
-            total_value = sum(line.price_unit * line.product_uom_qty for line in order.order_line)
+            trade_lines = order.order_line.filtered(lambda l: l.product_id.is_tradeable)
+            total_qty = sum(trade_lines.mapped('product_uom_qty'))
+            total_value = sum(line.price_unit * line.product_uom_qty for line in trade_lines)
             avg_price = total_value / total_qty if total_qty > 0 else 0.0
-            
-            product = order.order_line[0].product_id if order.order_line else False
+
+            product = trade_lines[0].product_id if trade_lines else False
             
             # Determine trade type based on sale order type (default to long for sales)
             trade_type = 'short'

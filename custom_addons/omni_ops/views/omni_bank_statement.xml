@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- <record id="account_accountant_view_bank_statement_line_kanban_bank_rec_widget" model="ir.ui.view">
+            <field name="name">account.bank.statement.line.kanban.bank_rec_widget.inherit</field>
+            <field name="model">account.bank.statement.line</field>
+             <field name="inherit_id" ref="account_accountant.view_bank_statement_line_kanban_bank_rec_widget"/>
+             <field name="arch" type="xml">
+                <xpath expr="//field[@name='is_reconciled']" position="after">
+                    <field name="match_quality"/>
+                </xpath>
+                <xpath expr="//div[hasclass('d-flex')]/div[hasclass('m-1')]" position="replace">
+                    <div class="m-1 d-flex flex-row flex-nowrap"> -->
+                        <!-- To Check Badge-->
+                         <!-- <span t-if="!record.checked.raw_value" class="badge text-bg-warning fw-normal">To Check</span> -->
+
+                         <!-- Green check: Perfect Match -->
+                          <!-- <div t-if="record.is_reconciled.raw_value and record.match_quality.raw_value == 'perfect'" class="badge text-bg-success fw-normal" title="Perfect Match">
+                            <i class="fa fa-check" />
+                          </div> -->
+
+                          <!-- Orange check: Partial or account match -->
+                           <!-- <div t-if="record.is_reconciled.raw_value and record.match_quality.raw_value == 'partial'" class="badge text-bg-warning fw-normal" title="Partial Match">
+                            <i class="fa fa-check" />
+                           </div>
+                    </div>
+                </xpath>
+             </field>
+        </record> -->
+    </data>
+</odoo>

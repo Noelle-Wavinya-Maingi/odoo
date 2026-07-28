@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit BOM Form View to add service-specific tabs -->
+    <record id="view_mrp_bom_form_inherit_omni" model="ir.ui.view">
+        <field name="name">mrp.bom.form.inherit.omni</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Add service scope field after product_tmpl_id -->
+            <field name="product_tmpl_id" position="after">
+                <field name="service_scope" invisible="type != 'service'" required="type == 'service'"/>
+            </field>
+            
+            <!-- Hide Product Variant field -->
+            <field name="product_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            
+            <!-- Hide Components tab for service BOMs -->
+            <xpath expr="//page[@name='components']" position="attributes">
+                <attribute name="invisible">type == 'service'</attribute>
+            </xpath>
+            
+            <!-- Hide Operations tab for service BOMs (we'll use custom tabs instead) -->
+            <xpath expr="//page[@name='operations']" position="attributes">
+                <attribute name="invisible">type == 'service'</attribute>
+            </xpath>
+            
+            <!-- Add dynamic service type tabs -->
+            <xpath expr="//page[@name='operations']" position="after">
+                <page string="FOB Operations" name="fob_operations" invisible="type != 'service' or service_scope not in ('fob','fob_freight','fob_lod','fob_freight_lod')">
+                    <field name="fob_operation_ids" nolabel="1"
+                        context="{'default_bom_id': id, 'default_workcenter_id': False, 'default_service_type': 'fob'}">
+                        <list create="true" delete="true">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="service_type" />
+                            <field name="time_cycle_manual"/>
+                            <field name="time_cycle"/>
+                            <!-- <field name="note"/> -->
+                        </list>
+                    </field>
+                </page>
+
+                <page string="Freight Operations" name="freight_operations" invisible="type != 'service' or service_scope not in ('freight','fob_freight','freight_lod','fob_freight_lod')">
+                    <field name="freight_operation_ids" nolabel="1"
+                        context="{'default_bom_id': id, 'default_workcenter_id': False, 'default_service_type': 'freight'}">
+                        <list create="true" delete="true">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="service_type" />
+                            <field name="time_cycle_manual"/>
+                            <field name="time_cycle"/>
+                            <!-- <field name="note"/> -->
+                        </list>
+                    </field>
+                </page>
+
+                <page string="Destination Operations" name="destination_operations" invisible="type != 'service' or service_scope not in ('lod','freight_lod','fob_lod','fob_freight_lod')">
+                    <field name="lod_operation_ids" nolabel="1"
+                        context="{'default_bom_id': id, 'default_workcenter_id': False, 'default_service_type': 'lod'}">
+                        <list create="true" delete="true">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="service_type" />
+                            <field name="time_cycle_manual"/>
+                            <field name="time_cycle"/>
+                            <!-- <field name="note"/> -->
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Inherit BOM Tree View to show service scope -->
+    <record id="view_mrp_bom_tree_inherit_omni" model="ir.ui.view">
+        <field name="name">mrp.bom.tree.inherit.omni</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="product_tmpl_id" position="after">
+                <field name="service_scope" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Inherit BOM Search View to add service scope filter -->
+    <record id="view_mrp_bom_search_inherit_omni" model="ir.ui.view">
+        <field name="name">mrp.bom.search.inherit.omni</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.view_mrp_bom_filter"/>
+        <field name="arch" type="xml">
+            <field name="product_tmpl_id" position="after">
+                <field name="service_scope"/>
+            </field>
+            <filter name="phantom" position="after">
+                <separator/>
+                <filter string="Service BOMs" name="service_boms" 
+                        domain="[('type', '=', 'service')]"/>
+                <filter string="FOB Services" name="fob_services" 
+                        domain="[('service_scope', 'in', ['fob', 'fob_freight', 'fob_lod', 'fob_freight_lod'])]"/>
+                <filter string="Freight Services" name="freight_services" 
+                        domain="[('service_scope', 'in', ['freight', 'fob_freight', 'freight_lod', 'fob_freight_lod'])]"/>
+                <filter string="Destination Services" name="destination_services" 
+                        domain="[('service_scope', 'in', ['lod', 'freight_lod', 'fob_lod', 'fob_freight_lod'])]"/>
+            </filter>
+        </field>
+    </record>
+
+    <!-- Rename Bill of Material to Process Template in form view -->
+    <record id="view_mrp_bom_form_rename" model="ir.ui.view">
+        <field name="name">mrp.bom.form.rename</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Rename form title from Bill of Material to Process Template -->
+            <form position="attributes">
+                <attribute name="string">Process Template</attribute>
+            </form>
+        </field>
+    </record>
+
+</odoo>

@@ -18,5 +18,13 @@
             <field name="padding">5</field>
         </record>
 
+         <!-- Trade Budgets -->
+        <record id="seq_trading_budget" model="ir.sequence">
+            <field name="name">Trade Budget</field>
+            <field name="code">trading.budget</field>
+            <field name="prefix">BUD</field>
+            <field name="padding">5</field>
+        </record>
+        
     </data>
 </odoo>

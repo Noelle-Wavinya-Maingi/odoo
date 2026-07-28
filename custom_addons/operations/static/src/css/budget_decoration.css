@@ -1,0 +1,14 @@
+/* Custom decoration color for submitted expenses - Custom purple color #714B67 */
+/* Target the expense field when the cell has text-expense-submitted class */
+.o_list_view td.text-expense-submitted,
+.o_list_view td.text-expense-submitted .o_field_many2one,
+.o_list_view td.text-expense-submitted .o_field_many2one a,
+.o_list_view td.text-expense-submitted .o_field_many2one span,
+.o_list_view td.text-expense-submitted a,
+.o_list_view .o_data_cell.text-expense-submitted,
+.o_list_view .o_data_cell.text-expense-submitted .o_field_many2one,
+.o_list_view .o_data_cell.text-expense-submitted .o_field_many2one a,
+.o_list_view .o_data_cell.text-expense-submitted .o_field_many2one span,
+.o_list_view .o_data_cell.text-expense-submitted a {
+    color: #714B67 !important;
+}

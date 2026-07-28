@@ -54,6 +54,8 @@
                         invisible="bill_count == 0">
                         <field name="bill_count" widget="statinfo" string="Vendor Bills" />
                     </button>
+                    <!-- Budget stat button lives in trading_budget/views/trading_trade_views.xml,
+                         injected here via xpath, only when that optional module is installed. -->
                 </div>
                 <h1>
                     <field name="name" nolabel="1" default_focus="1" />
@@ -86,23 +88,27 @@
                         <field name="sales_price" readonly="status != 'draft'" />
                         <field name="current_price" />
                     </group>
-                    <group string="Invoicing &amp; Cost Details">
-                        <field name="additional_costs" widget="monetary" readonly="1" />
-                        <field name="additional_revenue" widget="monetary" readonly="1" />
+                    <group string="Target">
+                        <label for="target_margin_percent" string="Target Margin"/>
+                        <div class="o_row g-0 d-flex">
+                            <field name="target_margin_percent" class="flex-grow-0" style="width: auto!important" />
+                            <p class="flex-grow-0" style="width: auto!important;">%</p>
+                        </div>
                     </group>
                 </group>
 
                 <!-- Hidden fields needed by cards but not shown in main group -->
                 <field name="currency_id" invisible="1" />
                 <field name="is_fully_matched" invisible="1" />
+                <field name="has_budget" invisible="1" />
 
                 <notebook>
-                     <page string="Trade Summary">
-                        <div class="row mt-4" string="Trade Summary">
+                     <page string="Trade Summary" name="trade_summary">
+                        <div class="row mt-4 d-flex align-items-stretch" string="Trade Summary">
 
                             <!-- Open Positions Card -->
-                            <div class="col-12 col-lg-4">
-                                <div class="card" style="border-left: 4px solid #0d6efd;">
+                            <div class="col-12 col-lg-6 d-flex">
+                                <div class="card w-100 h-100" style="border-left: 4px solid #0d6efd;">
                                     <div class="card-header" style="background-color: #e7f1ff;">
                                         <h5 class="mb-0"><i class="fa fa-chart-line me-1"/> Open Positions</h5>
                                     </div>
@@ -125,7 +131,7 @@
                                             </div>
                                             <div class="col-6 text-center">
                                                 <strong style="display:block; font-size:11px; color:#6c757d;">Market Price</strong>
-                                                <field name="current_price" readonly="1" nolabel="1" class="fw-bold"/>
+                                                <field name="current_price" widget="monetary" readonly="1" nolabel="1" class="fw-bold"/>
                                             </div>
                                         </div>
                                     </div>
@@ -133,12 +139,19 @@
                             </div>
 
                             <!-- Closed Positions Card -->
-                            <div class="col-12 col-lg-4">
-                                <div class="card" style="border-left: 4px solid #198754;">
+                            <div class="col-12 col-lg-6 d-flex">
+                                <div class="card w-100 h-100" style="border-left: 4px solid #198754;">
                                     <div class="card-header" style="background-color: #d1e7dd;">
                                         <h5 class="mb-0"><i class="fa fa-check-circle me-1"/> Closed Positions</h5>
                                     </div>
                                     <div class="card-body">
+                                        <div class="col-12 text-center">
+                                            <strong style="display:block; font-size:11px; color:#6c757d;">Additional Costs
+                                                <span class="fa fa-info-circle" title="Subtracted from Realized P&amp;L alongside CostBasis. Realized P&amp;L = Sales Value - Cost Basis - Additional Costs."/>
+                                            </strong>
+                                            <field name="additional_costs" widget="monetary" readonly="1" nolabel="1" class="fw-bold" options="{'currency_field': 'currency_id'}"/>
+                                        </div>
+                                        <hr/>
                                         <div class="row g-2">
                                             <div class="col-6 text-center">
                                                 <strong style="display:block; font-size:11px; color:#6c757d;">Sold Qty</strong>
@@ -165,12 +178,19 @@
                             </div>
 
                             <!-- Summary Card -->
-                            <div class="col-12 col-lg-4">
-                                <div class="card" style="border-left: 4px solid #ffc107;">
+                            <div class="col-12 col-lg-6 d-flex" style="margin-top: 2rem;" invisible="has_budget">
+                                <div class="card w-100 h-100" style="border-left: 4px solid #ffc107;">
                                     <div class="card-header" style="background-color: #fff3cd;">
                                         <h5 class="mb-0"><i class="fa fa-calculator me-1"/> Summary</h5>
                                     </div>
                                     <div class="card-body">
+                                         <div class="col-12 text-center">
+                                            <strong style="display:block; font-size:11px; color:#6c757d;">Additional Revenue
+                                                <span class="fa fa-info-circle" title="Additional revenue generated from the trade."/>
+                                            </strong>
+                                            <field name="additional_revenue" widget="monetary" readonly="1" nolabel="1" class="fw-bold" options="{'currency_field': 'currency_id'}"/>
+                                        </div>
+                                        <hr/>
                                         <div class="row g-2">
                                             <div class="col-6 text-center">
                                                 <strong style="display:block; font-size:11px; color:#6c757d;">Total P&amp;L</strong>
@@ -187,7 +207,9 @@
                                                        decoration-danger="pnl_percentage &lt; 0"/>
                                             </div>
                                             <div class="col-6 text-center">
-                                                <strong style="display:block; font-size:11px; color:#6c757d;">Avg Sale Price</strong>
+                                                <strong style="display:block; font-size:11px; color:#6c757d;">Avg Sale Price
+                                                    <span class="fa fa-info-circle" title="Same average sale price shown in Pricing Details, converted to the reporting currency. Currency differences are expected if Sales Price was set in a different currency."/>
+                                                </strong>
                                                 <field name="average_sale_price" widget="monetary" readonly="1" nolabel="1" class="fw-bold"/>
                                             </div>
                                             <div class="col-6 text-center">
@@ -198,9 +220,55 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Margin Target Card -->
+                            <div class="col-12 col-lg-6 d-flex" style="margin-top: 2rem;" invisible="has_budget">
+                                <div class="card w-100 h-100" style="border-left: 4px solid #6f42c1;">
+                                    <div class="card-header" style="background-color: #ede7f6;">
+                                        <h5 class="mb-0"><i class="fa fa-bullseye me-1"/> Margin Target</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-2">
+                                            <div class="col-6 text-center">
+                                                <strong style="display:block; font-size:11px; color:#6c757d;">Target P&amp;L</strong>
+                                                <field name="target_pnl" widget="monetary" readonly="1" nolabel="1" class="fw-bold"/>
+                                            </div>
+                                            <div class="col-6 text-center">
+                                                 <strong style="display:block; font-size:11px; color:#6c757d;">Target Sales Price
+                                                    <span class="fa fa-info-circle" title="Per-unit sale price needed to hit your Target Margin %, given average cost per unit. Compare against Sales Price / Avg Sale Price in the Summary card."/>
+                                                </strong>
+                                                <field name="target_sales_price" widget="monetary" readonly="1" nolabel="1" class="fw-bold"/>
+                                            </div>
+                                            <div class="col-6 text-center" invisible="trade_type != 'long'">
+                                                <strong style="display:block; font-size:11px; color:#6c757d;">Target Purchase Price
+                                                    <span class="fa fa-info-circle" title="Most you can pay to cover this position andstill hit your Target Margin %, given the sale price already locked in."/>
+                                                </strong>
+                                                <field name="target_purchase_price" widget="monetary" readonly="1" nolabel="1" class="fw-bold"/>
+                                            </div>
+                                            <div class="col-6 text-center" invisible="trade_type != 'short'">
+                                                <strong style="display:block; font-size:11px; color:#6c757d;">Variance vs. Target
+                                                    <span class="fa fa-info-circle" title="Total P&amp;L (Summary card) - Target P&amp;L. Positive = beating target, negative = falling short."/>
+                                                </strong>
+                                                <field name="margin_pnl_variance" widget="monetary" readonly="1" nolabel="1"
+                                                       class="fw-bold"
+                                                       decoration-success="margin_pnl_variance &gt; 0"
+                                                       decoration-danger="margin_pnl_variance &lt; 0"/>
+                                            </div>
+                                            <div class="col-6 text-center">
+                                                <strong style="display:block; font-size:11px; color:#6c757d;">Variance %</strong>
+                                                <field name="margin_pnl_variance_percent" readonly="1" nolabel="1"
+                                                       class="fw-bold"
+                                                       decoration-success="margin_pnl_variance_percent &gt; 0"
+                                                       decoration-danger="margin_pnl_variance_percent &lt; 0"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                      </page>
-                    
+                     <!-- Budget page lives in trading_budget/views/trading_trade_views.xml,
+                          injected here via xpath, only when that optional module is installed. -->
                 </notebook>
             </sheet>
             <chatter />
@@ -243,6 +311,8 @@
                 <field name="unrealized_pnl" type="measure"/>
                 <field name="total_pnl" type="measure"/>
                 <field name="pnl_percentage" type="measure"/>
+                <field name="target_pnl" type="measure"/>
+                <field name="margin_pnl_variance" type="measure"/>
             </pivot>
         </field>
     </record>

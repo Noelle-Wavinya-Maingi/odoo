@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Service Template list View -->
+    <record id="view_omni_service_template_tree" model="ir.ui.view">
+        <field name="name">omni.service.template.tree</field>
+        <field name="model">omni.service.template</field>
+        <field name="arch" type="xml">
+            <list string="Service Templates" decoration-info="not active">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="service_scope"/>
+                <field name="template_operation_ids" widget="badge" 
+                       decoration-info="not template_operation_ids"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Service Template Form View -->
+    <record id="view_omni_service_template_form" model="ir.ui.view">
+        <field name="name">omni.service.template.form</field>
+        <field name="model">omni.service.template</field>
+        <field name="arch" type="xml">
+            <form string="Service Template">
+                <header>
+                    <button name="action_create_bom_from_template" type="object" 
+                            string="Create BOM from Template" class="btn-primary"/>
+                    <field name="active" widget="boolean_toggle"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_create_bom_from_template" type="object" 
+                                class="oe_stat_button" icon="fa-plus">
+                            <field name="id" widget="statinfo" string="Create BOM"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Template Name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="service_scope" required="1"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description" placeholder="Description of this service template"/>
+                    </group>
+                    <notebook>
+                        <page string="Template Operations">
+                            <field name="template_operation_ids" nolabel="1">
+                                <list editable="bottom" create="true" delete="true">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="service_type"/>
+                                    <field name="duration"/>
+                                    <field name="cost_per_hour"/>
+                                    <field name="is_mandatory"/>
+                                    <field name="requires_documentation"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Service Template Search View -->
+    <record id="view_omni_service_template_search" model="ir.ui.view">
+        <field name="name">omni.service.template.search</field>
+        <field name="model">omni.service.template</field>
+        <field name="arch" type="xml">
+            <search string="Service Templates">
+                <field name="name"/>
+                <field name="service_scope"/>
+                <separator/>
+                <filter string="FOB Only" name="fob_only" 
+                        domain="[('service_scope', '=', 'fob_only')]"/>
+                <filter string="Freight Only" name="freight_only" 
+                        domain="[('service_scope', '=', 'freight_only')]"/>
+                <filter string="Destination Only" name="lod_only" 
+                        domain="[('service_scope', '=', 'lod_only')]"/>
+                <filter string="Combined Services" name="combined" 
+                        domain="[('service_scope', 'in', ['fob_freight', 'freight_lod', 'fob_lod', 'fob_freight_lod'])]"/>
+                <separator/>
+                <filter string="Active" name="active" 
+                        domain="[('active', '=', True)]"/>
+                <filter string="Archived" name="inactive" 
+                        domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Service Scope" name="group_service_scope" 
+                            context="{'group_by': 'service_scope'}"/>
+                    <filter string="Company" name="group_company" 
+                            context="{'group_by': 'company_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Service Template Action -->
+    <record id="action_omni_service_template" model="ir.actions.act_window">
+        <field name="name">Service Templates</field>
+        <field name="res_model">omni.service.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_omni_service_template_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first service template!
+            </p>
+            <p>
+                Service templates help you quickly create BOMs with predefined
+                operations for different freight forwarding service combinations.
+            </p>
+        </field>
+    </record>
+
+    <!-- Service Template Kanban View -->
+    <record id="view_omni_service_template_kanban" model="ir.ui.view">
+        <field name="name">omni.service.template.kanban</field>
+        <field name="model">omni.service.template</field>
+        <field name="arch" type="xml">
+            <kanban string="Service Templates" class="o_kanban_small_column">
+                <field name="service_scope"/>
+                <field name="name"/>
+                <field name="template_operation_ids"/>
+                <field name="active"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                    </div>
+                                    <div class="o_kanban_record_subtitle">
+                                        <span t-esc="record.service_scope.raw_value"/>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <div class="o_kanban_record_bottom">
+                                        <div class="oe_kanban_bottom_left">
+                                            <span t-esc="len(record.template_operation_ids.raw_value)"/> operations
+                                        </div>
+                                        <div class="oe_kanban_bottom_right">
+                                            <button name="action_create_bom_from_template" type="object" 
+                                                    class="btn btn-sm btn-primary">Create BOM</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+</odoo>

@@ -15,6 +15,10 @@
     <!-- Trades -->
     <menuitem id="menu_trading_trades" name="Trades" parent="menu_trading_root" action="action_trading_trades" />
 
+    <!-- Budgets -->
+    <!-- <menuitem id="menu_trading_trade_budget" name="Budgets" parent="menu_trading_root"
+              action="action_trading_trade_budget" sequence="40" /> -->
+
     <!-- Reporting -->
     <menuitem id="menu_trading_reporting" name="Reporting" parent="menu_trading_root"
               action="action_trading_trade_reporting" sequence="50" />

@@ -1,0 +1,7 @@
+<odoo>
+    <menuitem id="menu_trading_trade_budget"
+              name="Budgets"
+              parent="trading.menu_trading_root"
+              action="action_trading_trade_budget"
+              sequence="40" />
+</odoo>

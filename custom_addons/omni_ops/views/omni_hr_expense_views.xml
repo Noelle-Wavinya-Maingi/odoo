@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extend Expense Form View -->
+    <record id="hr_expense_view_form_inherit_omni_ops" model="ir.ui.view">
+        <field name="name">hr.expense.view.form.inherit.omni.ops</field>
+        <field name="model">hr.expense</field>
+        <field name="inherit_id" ref="hr_expense.hr_expense_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Add operations fields after the date field in the second group -->
+            <xpath expr="//field[@name='date']" position="after">
+                <field name="production_id" 
+                       string="File Number / Manufacturing Order"
+                       options="{'no_create': True}"
+                       readonly="not is_editable"/>
+                <field name="file_number" 
+                       string="File Number"
+                       readonly="1"
+                       invisible="not production_id"/>
+                <field name="budget_line_id" 
+                       string="Budget Line"
+                       readonly="not is_editable"
+                       
+                       invisible="not production_id"/>
+                <field name='bill_reference' />
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extend Expense Tree View -->
+    <record id="hr_expense_view_tree_inherit_omni_ops" model="ir.ui.view">
+        <field name="name">hr.expense.view.tree.inherit.omni.ops</field>
+        <field name="model">hr.expense</field>
+        <field name="inherit_id" ref="hr_expense.view_expenses_tree"/>
+        <field name="arch" type="xml">
+            <!-- Add file number column after employee -->
+            <xpath expr="//list//field[@name='employee_id']" position="after">
+                <field name="file_number" 
+                       string="File Number"
+                       optional="show"
+                       readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

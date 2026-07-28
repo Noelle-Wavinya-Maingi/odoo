@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Rename field descriptions for better freight operations terminology -->
+        <function model="omni.bom.utilities.mixin" name="_rename_field_descriptions"/>
+    </data>
+</odoo>

@@ -489,6 +489,11 @@ class TransportRates(models.Model):
     def force_recompute_from_sale_order(self, sale_order_id):
         """Called from sale.order when fields affecting transport rates change."""
         # Search rates that are related to the sale order in either sales_ids or selected_lad_sale_orders
+        if hasattr(sale_order_id, 'origin'):
+            sale_order_id = sale_order_id.origin
+            if not sale_order_id:
+                return True
+            
         rates = self.search([
             '|',  # OR condition
             ('sales_ids', 'in', [sale_order_id]),

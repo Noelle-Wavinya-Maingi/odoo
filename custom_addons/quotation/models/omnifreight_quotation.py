@@ -402,7 +402,7 @@ class OmnifreightQuotation(models.Model, OmniCurrencyConversion, SetQuote):
                 mo_vals = {
                     'product_id': freight_product.id,
                     'product_qty': line.product_uom_qty,
-                    'product_uom_id': line.product_uom.id,
+                    'product_uom_id': line.product_uom_id.id,
                     'bom_id': bom.id,
                     'origin': self.name,
                     'sale_line_id': line.id,

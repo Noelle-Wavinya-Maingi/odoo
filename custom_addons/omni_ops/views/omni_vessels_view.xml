@@ -1,0 +1,61 @@
+<odoo>
+    <data>
+        <!-- Form View -->
+        <record id="view_freight_vessel_form" model="ir.ui.view">
+            <field name="name">freight.vessel.form</field>
+            <field name="model">freight.vessel</field>
+            <field name="arch" type="xml">
+                <form string="Vessels">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="freight_carrier_id"/>
+                                <field name="name"/>
+                                <field name="imo_number"/>
+                                <field name="flag"/>
+                            </group>
+                            <group>
+                                <field name="year_built"/>
+                                <field name="length"/>
+                                <field name="width"/>
+                                <field name="depth"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- List View -->
+        <record id="view_freight_vessel_list" model="ir.ui.view">
+            <field name="name">freight.vessel.list</field>
+            <field name="model">freight.vessel</field>
+            <field name="arch" type="xml">
+                <list string="Vessels">
+                    <field name="freight_carrier_id"/>
+                    <field name="name"/>
+                    <field name="imo_number"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record id="action_freight_vessel" model="ir.actions.act_window">
+            <field name="name">Vessels</field>
+            <field name="res_model">freight.vessel</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a new vessel
+                </p>
+            </field>
+        </record>
+
+        <!-- Menu Item under Manufacturing > Configuration -->
+        <menuitem id="menu_freight_vessels"
+                  name="Vessels"
+                  parent="mrp.menu_mrp_configuration"
+                  action="action_freight_vessel"
+                  sequence="40"/>
+    </data>
+</odoo>

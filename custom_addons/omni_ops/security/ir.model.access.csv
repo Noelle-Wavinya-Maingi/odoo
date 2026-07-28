@@ -1,0 +1,14 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_omni_service_template_user,omni.service.template.user,model_omni_service_template,base.group_user,1,1,1,0
+access_omni_service_template_manager,omni.service.template.manager,model_omni_service_template,mrp.group_mrp_manager,1,1,1,1
+access_omni_service_template_operation_user,omni.service.template.operation.user,model_omni_service_template_operation,base.group_user,1,1,1,0
+access_omni_service_template_operation_manager,omni.service.template.operation.manager,model_omni_service_template_operation,mrp.group_mrp_manager,1,1,1,1
+access_freight_vessel,access_freight_vessel,model_freight_vessel,base.group_user,1,1,1,1
+access_omnifreight_documents,omnifreight.documents,model_omnifreight_documents,base.group_user,1,1,1,1
+access_omni_mrp_budget_user,omni.mrp.budget.user,model_omni_mrp_budget,mrp.group_mrp_user,1,1,1,1
+access_omni_mrp_budget_manager,omni.mrp.budget.manager,model_omni_mrp_budget,mrp.group_mrp_manager,1,1,1,1
+access_additional_file_operations_user,additional.file.operations.user,model_additional_file_operations,mrp.group_mrp_user,1,1,1,1
+access_additional_file_operations_manager,additional.file.operations.manager,model_additional_file_operations,mrp.group_mrp_manager,1,1,1,1
+access_account_move_omni,account.move.omni,model_account_move,base.group_user,1,1,1,1
+access_account_move_validation_wizard,account.move.validation.wizard,model_account_move_validation_wizard,base.group_user,1,1,1,1
+access_account_move_rejection_wizard,account.move.rejection.wizard,model_account_move_rejection_wizard,base.group_user,1,1,1,1

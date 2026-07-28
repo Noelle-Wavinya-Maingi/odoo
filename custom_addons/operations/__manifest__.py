@@ -16,13 +16,14 @@
 
     # Dependencies
     'depends': [
-        'base', 'mail', 'account'
+        'base', 'mail', 'account', 'hr_expense'
 
     ],
     'assets': {
         'web.assets_backend': [
             'operations/static/src/js/settings_patch.js',
             'operations/static/src/css/settings.css',
+            'operations/static/src/css/budget_decoration.css',
         ],
     },
 
